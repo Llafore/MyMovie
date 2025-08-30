@@ -39,3 +39,8 @@ yarn-error.*
 app-example
 
 .vscode/
+
+# ambiente
+.env
+.env.local
+.env.development
