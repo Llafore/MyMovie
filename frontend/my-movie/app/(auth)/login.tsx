@@ -2,6 +2,7 @@ import { useSignIn } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import React from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import SignInGoogleButton from '../components/SignInGoogleButton'
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -42,6 +43,8 @@ export default function Page() {
     <View className='flex-1 items-center justify-start gap-4 py-4'>
       <Text className='font-bold'>Login</Text>
 
+      <SignInGoogleButton/>
+      
       <View className='flex flex-col w-64 gap-1'>
         <Text>E-mail</Text>
         <TextInput
