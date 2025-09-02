@@ -5,7 +5,7 @@ import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 export default function Cadastro() {
   const { isLoaded, signUp, setActive } = useSignUp()
-  const router = useRouter()
+  const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -80,7 +80,7 @@ export default function Cadastro() {
   }
 
   return (
-    <View className='flex-1 items-center justify-start gap-4 py-4'>
+    <View className='flex-1 items-center justify-start gap-4 py-4 bg-black text-white'>
 
       <Text className='font-bold'>Cadastro</Text>
 
@@ -106,12 +106,12 @@ export default function Cadastro() {
         />
       </View>
 
-      <TouchableOpacity onPress={onSignUpPress} className='bg-purple-300 px-4 py-2 rounded'>
+      <TouchableOpacity onPress={onSignUpPress} className='bg-purple-600 px-4 py-2 rounded'>
         <Text>Continuar</Text>
       </TouchableOpacity>
       <View className='flex-row'>
         <Text>Já possui uma conta?</Text>
-        <Link href="/(auth)/login" className='text-purple-800'>
+        <Link href={'/login'} className='text-purple-800'>
           <Text> Login</Text>
         </Link>
       </View>

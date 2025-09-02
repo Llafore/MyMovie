@@ -1,6 +1,6 @@
 import { useSSO } from '@clerk/clerk-expo'
 import * as AuthSession from 'expo-auth-session'
-import { router } from 'expo-router'
+import { useRouter } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import React, { useCallback, useEffect } from 'react'
 import { Button, View } from 'react-native'
@@ -21,6 +21,7 @@ export const useWarmUpBrowser = () => {
 WebBrowser.maybeCompleteAuthSession()
 
 export default function Page() {
+  const router = useRouter();
   useWarmUpBrowser()
 
   // Use the `useSSO()` hook to access the `startSSOFlow()` method
@@ -49,7 +50,7 @@ export default function Page() {
               return
             }
 
-            router.push('/')
+            router.push('/(home)')
           },
         })
       } 
@@ -58,7 +59,7 @@ export default function Page() {
       // for more info on error handling
       console.error(JSON.stringify(err, null, 2))
     }
-  }, [startSSOFlow])
+  }, [startSSOFlow, router])
 
   return (
     <View>

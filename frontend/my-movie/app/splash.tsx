@@ -25,8 +25,8 @@ export default function SplashScreen() {
   }, [isLoaded, isSignedIn, mounted, router]);
 
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <ActivityIndicator size="large" className='text-purple-800' />
+    <View className="flex-1 items-center justify-center bg-black text-white">
+      <ActivityIndicator size="large" className='text-purple-400' />
       <Text className="mt-4 text-lg font-bold">Carregando...</Text>
     </View>
   );

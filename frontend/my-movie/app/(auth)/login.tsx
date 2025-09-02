@@ -1,12 +1,16 @@
+import { Button, ButtonText } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Heading } from '@/components/ui/heading'
 import { useSignIn } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
 import React from 'react'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Keyboard, Pressable, Text, TextInput, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import SignInGoogleButton from '../components/SignInGoogleButton'
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn()
-  const router = useRouter()
+  const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -26,7 +30,7 @@ export default function Page() {
       // and redirect the user
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId })
-        router.replace('/')
+        router.replace('/');
       } else {
         // If the status isn't complete, check why. User might need to
         // complete further steps.
@@ -40,43 +44,64 @@ export default function Page() {
   }
 
   return (
-    <View className='flex-1 items-center justify-start gap-4 py-4'>
-      <Text className='font-bold'>Login</Text>
+    <SafeAreaView edges={['top']} className='flex-1 items-center justify-start p-4 bg-black'>
+      <Pressable className='w-full h-full items-center justify-start gap-6' onPress={() => { Keyboard.dismiss() }}>
+        <Heading size={'3xl'} className='text-white py-4'>LOGO</Heading>
 
-      <SignInGoogleButton/>
-      
-      <View className='flex flex-col w-64 gap-1'>
-        <Text>E-mail</Text>
-        <TextInput
-          className='border border-gray-300 rounded px-4 py-2 w-64 outline-none focus:border-gray-600 placeholder:text-gray-400 placeholder:italic'
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="seuemail@email.com"
-          onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-        />
-      </View>
+        <Card size="" variant="filled" className="rounded-2xl items-center px-4 pt-4 pb-8 w-full gap-6">
+          <Heading size="2xl" className="">
+            Login
+          </Heading>
 
-      <View className='flex flex-col w-64 gap-1'>
-        <Text>Senha</Text>
-        <TextInput
-          className='border border-gray-300 rounded px-4 py-2 w-64 outline-none focus:border-gray-600 placeholder:text-gray-400 placeholder:italic'
-          value={password}
-          placeholder="Senha"
-          secureTextEntry={true}
-          onChangeText={(password) => setPassword(password)}
-        />
-      </View>
+          <SignInGoogleButton />
 
-      <TouchableOpacity onPress={onSignInPress} className='bg-purple-300 px-4 py-2 rounded'>
-        <Text>Continuar</Text>
-      </TouchableOpacity>
-      
-      <View className='flex-row'>
-        <Text>Não possui uma conta?</Text>
-        <Link href="/(auth)/cadastro" className='text-purple-800'>
-          <Text> Cadastre-se</Text>
-        </Link>
-      </View>
-    </View>
+          <View className='flex flex-col w-full gap-2'>
+            <Text className='text-white'>E-mail</Text>
+            <TextInput
+              className='border border-secondary-light rounded-lg p-4 w-full outline-none focus:border-primary text-white'
+              autoCapitalize="none"
+              value={emailAddress}
+              placeholder="seuemail@email.com"
+              placeholderTextColor={'#9F95A6'}
+              onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
+            />
+            <Text className='text-red-300 px-2'>Senha inválida!</Text>
+          </View>
+
+          <View className='flex flex-col w-full gap-2'>
+            <Text className='text-white'>Senha</Text>
+            <TextInput
+              className='border border-secondary-light rounded-lg p-4 w-full outline-none focus:border-primary text-white'
+              value={password}
+              placeholder="Senha"
+              placeholderTextColor={'#9F95A6'}
+              secureTextEntry={true}
+              onChangeText={(password) => setPassword(password)}
+            />
+            <Text className='text-white invisible'>Senha</Text>
+          </View>
+
+          <Button onPress={onSignInPress} variant='solid' action='primary' size='xl' className='w-full'>
+            <ButtonText className='text-white font-bold'>Continuar</ButtonText>
+          </Button>
+
+          <View className='flex-row'>
+            <Link href="/(auth)/trocar-senha" className='text-purple-300 underline'>
+              Esqueci minha senha
+            </Link>
+          </View>
+        </Card>
+
+        <View className='flex-row'>
+          <Text className='text-white'>Não possui uma conta?</Text>
+
+          <Link href="/(auth)/cadastro">
+            <Text className='text-purple-300'> Cadastre-se</Text>
+          </Link>
+        </View>
+
+      </Pressable>
+
+    </SafeAreaView>
   )
 }
