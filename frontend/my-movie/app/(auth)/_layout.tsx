@@ -16,7 +16,7 @@ export default function AuthRoutesLayout() {
         contentStyle: { backgroundColor: 'black' },
         headerShown: false,
         presentation: 'transparentModal',
-        animationDuration: 300,
+        animationDuration: 100,
         animation: 'fade_from_bottom',
         animationTypeForReplace: 'push',
       }}

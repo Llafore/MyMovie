@@ -38,11 +38,11 @@ cssInterop(PrimitiveIcon, {
 });
 
 const buttonStyle = tva({
-  base: 'group/button rounded-xl bg-primary flex-row items-center justify-center data-[focus-visible=true]:web:outline-none data-[focus-visible=true]:web:ring-2 data-[disabled=true]:opacity-40 gap-2',
+  base: 'group/button rounded-lg bg-primary flex-row items-center justify-center data-[disabled=true]:opacity-40 gap-2',
   variants: {
     action: {
       primary:
-        'bg-primary data-[hover=true]:bg-primary-black data-[active=true]:bg-primary-dark data-[hover=true]:border-neutral-700 data-[active=true]:border-neutral-500 data-[focus-visible=true]:web:ring-indicator-info',
+        'bg-primary data-[hover=true]:bg-primary-dark data-[active=true]:bg-primary-black',
       secondary:
         'bg-secondary-500 border-secondary-300 data-[hover=true]:bg-secondary-600 data-[hover=true]:border-secondary-400 data-[active=true]:bg-secondary-700 data-[active=true]:border-secondary-700 data-[focus-visible=true]:web:ring-indicator-info',
       positive:
@@ -120,11 +120,11 @@ const buttonStyle = tva({
 });
 
 const buttonTextStyle = tva({
-  base: 'text-typography-0 font-semibold web:select-none',
+  base: 'text-white font-semibold web:select-none',
   parentVariants: {
     action: {
       primary:
-        'text-primary-600 data-[hover=true]:text-primary-600 data-[active=true]:text-primary-700',
+        'text-white data-[hover=true]:text-neutral-100 data-[active=true]:text-neutral-100',
       secondary:
         'text-typography-500 data-[hover=true]:text-typography-600 data-[active=true]:text-typography-700',
       positive:
@@ -136,7 +136,7 @@ const buttonTextStyle = tva({
       link: 'data-[hover=true]:underline data-[active=true]:underline',
       outline: '',
       solid:
-        'text-typography-0 data-[hover=true]:text-typography-0 data-[active=true]:text-typography-0',
+        'text-white data-[hover=true]:text-neutral-100 data-[active=true]:text-neurtal-100',
     },
     size: {
       xs: 'text-xs',
@@ -151,7 +151,7 @@ const buttonTextStyle = tva({
       variant: 'solid',
       action: 'primary',
       class:
-        'text-typography-0 data-[hover=true]:text-typography-0 data-[active=true]:text-typography-0',
+        'text-white data-[hover=true]:text-neutral-100 data-[active=true]:text-neutral-100',
     },
     {
       variant: 'solid',
