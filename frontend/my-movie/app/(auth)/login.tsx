@@ -112,7 +112,7 @@ export default function Page() {
                   autoCapitalize='none'
                   placeholder='seuemail@emai.com' />
 
-                <InputSlot className="pr-3" onPress={handleState}>
+                <InputSlot className="pr-4" onPress={handleState}>
                   <InputIcon as={mostrarSenha ? EyeIcon : EyeOffIcon} />
                 </InputSlot>
               </Input>
