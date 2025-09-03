@@ -39,6 +39,7 @@ export default function Page() {
       return !state;
     });
   };
+  
   // Handle the submission of the sign-in form
   const onEntrarPress = async () => {
     if (!emailValido || !senhaValida) return

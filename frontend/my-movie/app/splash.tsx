@@ -19,7 +19,7 @@ export default function SplashScreen() {
       if (isSignedIn) {
         router.replace('/(home)');
       } else {
-        router.replace('/(auth)/login');
+        router.replace('/(auth)/home');
       }
     }
   }, [isLoaded, isSignedIn, mounted, router]);
