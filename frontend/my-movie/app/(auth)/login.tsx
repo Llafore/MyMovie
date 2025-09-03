@@ -75,9 +75,9 @@ export default function Page() {
   return (
     <SafeAreaView edges={['top']} className='flex-1 items-center justify-start p-4 bg-black'>
       <Pressable className='w-full h-full items-center justify-start gap-4' onPress={() => { Keyboard.dismiss() }}>
-        <Heading size={'3xl'} className='text-white py-4'>LOGO</Heading>
+        <Heading size={'3xl'} className='text-white py-2'>LOGO</Heading>
 
-        <Card size="" variant="filled" className="rounded-2xl items-center px-4 pt-4 pb-8 w-full gap-2">
+        <Card size="" variant="filled" className="rounded-2xl items-center px-4 pt-2 pb-8 w-full gap-2">
           <Heading size="2xl" className="">
             Login
           </Heading>
@@ -93,11 +93,12 @@ export default function Page() {
                   value={email}
                   onBlur={() => { checkEmail(email) }}
                   onChangeText={(email) => setEmail(email)}
+                  autoComplete='email'
                   autoCapitalize='none'
                   placeholder='seuemail@emai.com' />
               </Input>
 
-              <Text className={`text-red-300 ${emailValido ? 'invisible' : ''}`}>Email inválido</Text>
+              <Text className={`text-red-300 ${emailValido ? 'invisible' : ''}`}>E-mail inválido</Text>
 
             </View>
 
@@ -109,8 +110,10 @@ export default function Page() {
                   type={mostrarSenha ? 'text' : 'password'}
                   value={senha}
                   onChangeText={(senha) => checkSenha(senha)}
+                  onSubmitEditing={onEntrarPress}
                   autoCapitalize='none'
-                  placeholder='seuemail@emai.com' />
+                  autoComplete='password'
+                  placeholder='No mímimo 8 caracteres' />
 
                 <InputSlot className="pr-4" onPress={handleState}>
                   <InputIcon as={mostrarSenha ? EyeIcon : EyeOffIcon} />

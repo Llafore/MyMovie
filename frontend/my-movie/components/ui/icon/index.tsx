@@ -1,14 +1,15 @@
-import React from 'react';
-import { createIcon } from '@gluestack-ui/core/icon/creator';
-import { Path } from 'react-native-svg';
-import { tva } from '@gluestack-ui/utils/nativewind-utils';
-import { cssInterop } from 'nativewind';
-import { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import {
-  PrimitiveIcon,
+  createIcon,
   IPrimitiveIcon,
+  PrimitiveIcon,
   Svg,
 } from '@gluestack-ui/core/icon/creator';
+import { tva, VariantProps } from '@gluestack-ui/utils/nativewind-utils';
+import { cssInterop } from 'nativewind';
+import React from 'react';
+import { Path } from 'react-native-svg';
+
+
 
 export const UIIcon = createIcon({
   Root: PrimitiveIcon,
@@ -271,7 +272,7 @@ ArrowDownIcon.displayName = 'ArrowDownIcon';
 ArrowRightIcon.displayName = 'ArrowRightIcon';
 ArrowLeftIcon.displayName = 'ArrowLeftIcon';
 
-export { ArrowUpIcon, ArrowDownIcon, ArrowRightIcon, ArrowLeftIcon };
+export { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon };
 
 const AtSignIcon = createIcon({
   Root: Svg,
@@ -437,7 +438,7 @@ const CheckCircleIcon = createIcon({
 CheckIcon.displayName = 'CheckIcon';
 CheckCircleIcon.displayName = 'CheckCircleIcon';
 
-export { CheckIcon, CheckCircleIcon };
+export { CheckCircleIcon, CheckIcon };
 
 const ChevronUpIcon = createIcon({
   Root: Svg,
@@ -576,13 +577,12 @@ ChevronsRightIcon.displayName = 'ChevronsRightIcon';
 ChevronsUpDownIcon.displayName = 'ChevronsUpDownIcon';
 
 export {
-  ChevronUpIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
-  ChevronsUpDownIcon,
+  ChevronsUpDownIcon, ChevronUpIcon
 };
 
 const CircleIcon = createIcon({
@@ -680,7 +680,7 @@ const CloseCircleIcon = createIcon({
 CloseIcon.displayName = 'CloseIcon';
 CloseCircleIcon.displayName = 'CloseCircleIcon';
 
-export { CloseIcon, CloseCircleIcon };
+export { CloseCircleIcon, CloseIcon };
 
 const CopyIcon = createIcon({
   Root: Svg,
@@ -837,6 +837,48 @@ const FavouriteIcon = createIcon({
 
 FavouriteIcon.displayName = 'FavouriteIcon';
 export { FavouriteIcon };
+
+const GoogleIcon = createIcon({
+  Root: Svg,
+  viewBox: '0 0 24 24',
+  path: (
+    <>
+        <Path
+          clipRule="evenodd"
+          fill="none"
+          fillRule="evenodd"
+          d="M0 0H24V24H0V0z"
+        />
+        <Path
+          clipRule="evenodd"
+          d="M5.172 12c0 -0.779 0.129 -1.527 0.361 -2.228L1.488 6.684C0.7 8.284 0.256 10.088 0.256 12c0 1.911 0.444 3.713 1.231 5.312l4.042 -3.094A7.106 7.106 0 0 1 5.172 12"
+          fill="#FBBC05"
+          fillRule="evenodd"
+        />
+        <Path
+          clipRule="evenodd"
+          d="M12.273 4.909c1.693 0 3.223 0.6 4.424 1.582L20.193 3C18.063 1.145 15.332 0 12.273 0 7.524 0 3.443 2.716 1.488 6.684l4.044 3.088a7.082 7.082 0 0 1 6.741 -4.863"
+          fill="#EA4335"
+          fillRule="evenodd"
+        />
+        <Path
+          clipRule="evenodd"
+          d="M12.273 19.091a7.082 7.082 0 0 1 -6.74 -4.863L1.488 17.315C3.443 21.284 7.524 24 12.273 24c2.931 0 5.729 -1.041 7.83 -2.991L16.264 18.041c-1.083 0.682 -2.447 1.049 -3.991 1.049"
+          fill="#34A853"
+          fillRule="evenodd"
+        />
+        <Path
+          clipRule="evenodd"
+          d="M23.744 12c0 -0.709 -0.109 -1.473 -0.273 -2.182h-11.197v4.636h6.445c-0.322 1.581 -1.199 2.796 -2.455 3.587l3.839 2.968c2.206 -2.047 3.641 -5.098 3.641 -9.009"
+          fill="#4285F4"
+          fillRule="evenodd"
+        />
+    </>
+  ),
+});
+    
+GoogleIcon.displayName = 'GlobeIcon';
+export { GoogleIcon };
 
 const GlobeIcon = createIcon({
   Root: Svg,
@@ -1027,7 +1069,7 @@ const ExternalLinkIcon = createIcon({
 });
 
 ExternalLinkIcon.displayName = 'ExternalLinkIcon';
-export { LinkIcon, ExternalLinkIcon };
+export { ExternalLinkIcon, LinkIcon };
 
 const LoaderIcon = createIcon({
   Root: Svg,
@@ -1315,7 +1357,7 @@ const Repeat1Icon = createIcon({
 });
 
 Repeat1Icon.displayName = 'Repeat1Icon';
-export { RepeatIcon, Repeat1Icon };
+export { Repeat1Icon, RepeatIcon };
 
 const SearchIcon = createIcon({
   Root: Svg,
@@ -1598,3 +1640,4 @@ const UnlockIcon = createIcon({
 
 UnlockIcon.displayName = 'UnlockIcon';
 export { UnlockIcon };
+

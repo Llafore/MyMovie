@@ -1,9 +1,10 @@
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button'
+import { GoogleIcon } from '@/components/ui/icon'
 import { useSSO } from '@clerk/clerk-expo'
 import * as AuthSession from 'expo-auth-session'
 import { useRouter } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import React, { useCallback, useEffect } from 'react'
-import { Button, View } from 'react-native'
 
 export const useWarmUpBrowser = () => {
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function Page() {
             router.push('/(home)')
           },
         })
-      } 
+      }
     } catch (err) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
@@ -62,8 +63,9 @@ export default function Page() {
   }, [startSSOFlow, router])
 
   return (
-    <View>
-      <Button title="Google" onPress={onPress} />
-    </View>
+    <Button onPress={onPress} size='xl' variant='solid' action='primary' className='w-fit bg-transparent border border-neutral-500 transition data-[active=true]:bg-neutral-700 disabled:bg-primary-black'>
+      <ButtonIcon as={GoogleIcon} className='text-transparent'></ButtonIcon>
+      <ButtonText className='data-[active=true]:text-white pl-4'>Entrar com Google</ButtonText>
+    </Button>
   )
 }
