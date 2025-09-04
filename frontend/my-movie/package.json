@@ -11,6 +11,7 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^2.14.27",
     "@expo/html-elements": "0.10.1",
     "@expo/vector-icons": "^14.1.0",
     "@gluestack-ui/core": "3.0.0",

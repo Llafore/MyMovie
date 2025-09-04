@@ -194,18 +194,13 @@ export default function Cadastro() {
             <ButtonText className='text-white font-bold pl-4 data-[disabled=true]:text-neutral-500'>Continuar</ButtonText>
           </Button>
 
-          <View className='flex-row pt-4'>
-            <Link href="/(auth)/trocar-senha" className='text-primary-light underline'>
-              Esqueci minha senha
-            </Link>
-          </View>
         </Card>
 
         <View className='flex-row'>
           <Text className='text-white'>Já possui uma conta?</Text>
 
           <Link href="/(auth)/login">
-            <Text className='text-primary-light'>Entrar</Text>
+            <Text className='text-primary-light'> Entrar</Text>
           </Link>
         </View>
 
