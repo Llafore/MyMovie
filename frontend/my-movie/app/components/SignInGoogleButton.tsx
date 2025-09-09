@@ -36,24 +36,23 @@ export default function Page() {
         // For web, defaults to current path
         // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
         // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
-        redirectUrl: AuthSession.makeRedirectUri(),
+        redirectUrl: AuthSession.makeRedirectUri({native: 'mymovie://(home)/' }),
       })
 
+        console.log("session id:", createdSessionId)
       // If sign in was successful, set the active session
       if (createdSessionId) {
         setActive!({
           session: createdSessionId,
-          navigate: async ({ session }) => {
-            if (session?.currentTask) {
-              // Check for tasks and navigate to custom UI to help users resolve them
-              // See https://clerk.com/docs/custom-flows/overview#session-tasks
-              console.log(session?.currentTask)
-              return
-            }
-
-            router.push('/(home)')
-          },
         })
+        console.log("session id:", createdSessionId)
+        setTimeout(() => {
+          router.replace('/(home)')
+        }, 2000);
+        // Redirect to your app's main page after successful sign-in
+        // Adjust the path as necessary
+        //
+          // router.replace('/(home)')
       }
     } catch (err) {
       // See https://clerk.com/docs/custom-flows/error-handling

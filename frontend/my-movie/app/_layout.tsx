@@ -7,8 +7,8 @@ import { Slot } from 'expo-router';
 
 export default function RootLayout() {
   return (
-    <ClerkProvider tokenCache={tokenCache}>
-      <GluestackUIProvider mode="dark">
+    <ClerkProvider tokenCache={tokenCache} publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+      <GluestackUIProvider mode="dark" >
         <Slot/>
       </GluestackUIProvider>
     </ClerkProvider>
