@@ -208,6 +208,7 @@ export default function Cadastro() {
             <Text className='text-white pb-1 ps-6 font-bold'>E-mail</Text>
             <Input size='xl' isInvalid={!emailValido}>
               <InputField
+                className='autofill:bg-transparent bg-red-900'
                 autoCapitalize="none"
                 value={email}
                 placeholder="seuemail@email.com"

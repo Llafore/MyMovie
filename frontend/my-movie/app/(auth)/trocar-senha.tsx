@@ -1,5 +1,5 @@
 import { Alert, AlertIcon, AlertText } from "@/components/ui/alert";
-import { Button, ButtonText } from "@/components/ui/button";
+import { Button, ButtonSpinner, ButtonText } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { EyeIcon, EyeOffIcon, InfoIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
@@ -23,6 +23,8 @@ export default function ForgotPasswordScreen() {
   const [mensagemErro, setMensagemErro] = useState<string | null>(null);
 
   const [step, setStep] = useState<"request" | "verify">("request");
+
+  const [loading, setLoading] = useState(false)
 
   const checkSenha = (senha: string): boolean => {
     setSenha(senha)
@@ -48,6 +50,7 @@ export default function ForgotPasswordScreen() {
   };
 
   const requestReset = async () => {
+    setLoading(true)
     setMensagemErroEmail(null)
     try {
       await signIn!.create({
@@ -57,6 +60,8 @@ export default function ForgotPasswordScreen() {
       setStep("verify");
     } catch (err: any) {
       setMensagemErroEmail(err.errors?.[0]?.longMessage || "Ocorreu um erro. Tente novamente.");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -65,6 +70,7 @@ export default function ForgotPasswordScreen() {
     const validacaoSenhasIguais = checkSenhasIguais()
     if (!validacaoSenha || !validacaoSenhasIguais) return
 
+    setLoading(true)
     setMensagemErro(null)
 
     try {
@@ -79,6 +85,8 @@ export default function ForgotPasswordScreen() {
       }
     } catch (err: any) {
       setMensagemErro(err.errors?.[0]?.longMessage || "Ocorreu um erro. Tente novamente.");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -116,7 +124,8 @@ export default function ForgotPasswordScreen() {
               }
 
             <Button variant='solid' size='xl' className='w-full' onPress={requestReset}>
-              <ButtonText className='text-white'>Enviar código</ButtonText>
+              <ButtonSpinner className={loading ? 'data-[active=true]:text-neutral-100' : 'hidden'} color='white' ></ButtonSpinner>
+              <ButtonText className='text-white'>Confirmar código</ButtonText>
             </Button>
           </View>
         )}
@@ -198,6 +207,7 @@ export default function ForgotPasswordScreen() {
             </View>
 
             <Button variant='solid' size='xl' className='w-full' onPress={verifyReset}>
+              <ButtonSpinner className={loading ? 'data-[active=true]:text-neutral-100' : 'hidden'} color='white' ></ButtonSpinner>
               <ButtonText className='text-white'>Alterar senha</ButtonText>
             </Button>
 

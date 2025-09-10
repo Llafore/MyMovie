@@ -1,6 +1,6 @@
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button'
 import { Heading } from '@/components/ui/heading'
-import { EyeIcon, EyeOffIcon } from '@/components/ui/icon'
+import { EyeIcon, EyeOffIcon, InfoIcon } from '@/components/ui/icon'
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input'
 import { useSignIn } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
@@ -8,6 +8,7 @@ import React from 'react'
 import { Keyboard, Pressable, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import SignInGoogleButton from '../components/SignInGoogleButton'
+import { Alert, AlertIcon, AlertText } from '@/components/ui/alert'
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -19,6 +20,8 @@ export default function Page() {
   const [senha, setSenha] = React.useState('')
   const [mostrarSenha, setMostrarSenha] = React.useState(false)
   const [senhaValida, setSenhaValida] = React.useState(true)
+
+  const [mensagemErro, setMensagemErro] = React.useState<string | null>(null);
 
   const [loading, setLoading] = React.useState(false)
 
@@ -46,6 +49,8 @@ export default function Page() {
 
     setLoading(true)
 
+    setMensagemErro(null)
+
     // Start the sign-in process using the email and password provided
     try {
       const signInAttempt = await signIn.create({
@@ -63,10 +68,10 @@ export default function Page() {
         // complete further steps.
         console.error(JSON.stringify(signInAttempt, null, 2))
       }
-    } catch (err) {
+    } catch (err: any) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
+      setMensagemErro(err.errors?.[0]?.longMessage || 'Ocorreu um erro. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -123,6 +128,15 @@ export default function Page() {
             </Input>
 
             <Text className={`text-red-300 ps-6 pt-1 ${senhaValida ? 'invisible' : ''}`}>Senha inválida</Text>
+
+            {mensagemErro &&
+              <Alert action="error" className="gap-3 w-full p-4 rounded-3xl">
+                <AlertIcon as={InfoIcon} size="xl" className="fill-none text-red-500" />
+                <AlertText size="lg" className='text-white pe-4 ps-4 flex-1 flex-wrap'>
+                  {mensagemErro}
+                </AlertText>
+              </Alert>
+            }
 
           </View>
         </View>
