@@ -39,16 +39,11 @@ export default function Page() {
         redirectUrl: AuthSession.makeRedirectUri({native: 'mymovie://(home)/' }),
       })
 
-        console.log("session id:", createdSessionId)
       // If sign in was successful, set the active session
       if (createdSessionId) {
         setActive!({
           session: createdSessionId,
         })
-        console.log("session id:", createdSessionId)
-        setTimeout(() => {
-          router.replace('/(home)')
-        }, 2000);
         // Redirect to your app's main page after successful sign-in
         // Adjust the path as necessary
         //
@@ -59,12 +54,12 @@ export default function Page() {
       // for more info on error handling
       console.error(JSON.stringify(err, null, 2))
     }
-  }, [startSSOFlow, router])
+  }, [startSSOFlow])
 
   return (
-    <Button onPress={onPress} size='xl' variant='solid' action='primary' className='w-fit bg-transparent border border-neutral-500 transition data-[active=true]:bg-neutral-700 disabled:bg-primary-black'>
+    <Button onPress={onPress} size='xl' variant='solid' action='primary' className='w-full bg-transparent rounded-full border border-neutral-500 transition data-[active=true]:bg-neutral-700 disabled:bg-primary-black'>
       <ButtonIcon as={GoogleIcon} className='text-transparent'></ButtonIcon>
-      <ButtonText className='data-[active=true]:text-white pl-4'>Entrar com Google</ButtonText>
+      <ButtonText className='data-[active=true]:text-white pl-4'>Continuar com Google</ButtonText>
     </Button>
   )
 }

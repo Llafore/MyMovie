@@ -1,5 +1,4 @@
 import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
 import { EyeIcon, EyeOffIcon } from '@/components/ui/icon'
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input'
@@ -39,7 +38,7 @@ export default function Page() {
       return !state;
     });
   };
-  
+
   // Handle the submission of the sign-in form
   const onEntrarPress = async () => {
     if (!emailValido || !senhaValida) return
@@ -76,74 +75,79 @@ export default function Page() {
   return (
     <SafeAreaView edges={['top']} className='flex-1 items-center justify-start p-4 bg-black'>
       <Pressable className='w-full h-full items-center justify-start gap-4' onPress={() => { Keyboard.dismiss() }}>
-        <Heading size={'3xl'} className='text-white py-2'>LOGO</Heading>
 
-        <Card size="" variant="filled" className="rounded-2xl items-center px-4 pt-2 pb-8 w-full gap-2">
-          <Heading size="2xl" className="">
-            Login
-          </Heading>
+        <Heading className="m-0 text-4xl font-bold text-white">
+          Entrar
+        </Heading>
 
-          <SignInGoogleButton />
+        <SignInGoogleButton />
 
-          <View className='w-full flex flex-col gap-2 pt-4 pb-6'>
-            <View className='flex flex-col w-full gap-1'>
-              <Text className='text-white pb-1 font-bold'>E-mail</Text>
-              <Input size='xl' isInvalid={!emailValido}>
-                <InputField
-                  type='text'
-                  value={email}
-                  onBlur={() => { checkEmail(email) }}
-                  onChangeText={(email) => setEmail(email)}
-                  autoComplete='email'
-                  autoCapitalize='none'
-                  placeholder='seuemail@emai.com' />
-              </Input>
+        <View className='text-neutral-100 p-0'>
+          <Text className='text-neutral-100 w-fit font-bold'>ou</Text>
+        </View>
 
-              <Text className={`text-red-300 ${emailValido ? 'invisible' : ''}`}>E-mail inválido</Text>
+        <View className='w-full flex flex-col gap-2 pb-6'>
+          <View className='flex flex-col w-full gap-1'>
+            <Text className='text-white pb-1 font-bold ps-6'>E-mail</Text>
+            <Input size='xl' isInvalid={!emailValido}>
+              <InputField
+                type='text'
+                value={email}
+                onBlur={() => { checkEmail(email) }}
+                onChangeText={(email) => setEmail(email)}
+                autoComplete='email'
+                autoCapitalize='none'
+                placeholder='seuemail@email.com' />
+            </Input>
 
-            </View>
+            <Text className={`text-red-300 ps-6 pt-1 ${emailValido ? 'invisible' : ''}`}>E-mail inválido</Text>
 
-            <View className='flex flex-col w-full gap-1'>
-              <Text className='text-white pb-1 font-bold'>Senha</Text>
-
-              <Input size='xl' isInvalid={!senhaValida}>
-                <InputField
-                  type={mostrarSenha ? 'text' : 'password'}
-                  value={senha}
-                  onChangeText={(senha) => checkSenha(senha)}
-                  onSubmitEditing={onEntrarPress}
-                  autoCapitalize='none'
-                  autoComplete='password'
-                  placeholder='No mímimo 8 caracteres' />
-
-                <InputSlot className="pr-4" onPress={handleState}>
-                  <InputIcon as={mostrarSenha ? EyeIcon : EyeOffIcon} />
-                </InputSlot>
-              </Input>
-
-              <Text className={`text-red-300 ${senhaValida ? 'invisible' : ''}`}>Senha inválida</Text>
-
-            </View>
           </View>
 
-          <Button onPress={onEntrarPress} variant='solid' action='primary' size='xl' className='w-full transition disabled:bg-primary-black'>
-            <ButtonSpinner className={loading ? 'data-[active=true]:text-neutral-100' : 'hidden'} color='white' ></ButtonSpinner>
-            <ButtonText className='text-white font-bold pl-4 data-[disabled=true]:text-neutral-500'>Continuar</ButtonText>
-          </Button>
+          <View className='flex flex-col w-full gap-1'>
+            <Text className='text-white pb-1 font-bold ps-6'>Senha</Text>
 
-          <View className='flex-row pt-4'>
+            <Input size='xl' isInvalid={!senhaValida}>
+              <InputField
+                type={mostrarSenha ? 'text' : 'password'}
+                value={senha}
+                onChangeText={(senha) => checkSenha(senha)}
+                onSubmitEditing={onEntrarPress}
+                autoCapitalize='none'
+                autoComplete='password'
+                placeholder='No mímimo 8 caracteres' />
+
+              <InputSlot className="pr-4" onPress={handleState}>
+                <InputIcon as={mostrarSenha ? EyeIcon : EyeOffIcon} />
+              </InputSlot>
+            </Input>
+
+            <Text className={`text-red-300 ps-6 pt-1 ${senhaValida ? 'invisible' : ''}`}>Senha inválida</Text>
+
+          </View>
+        </View>
+
+        <Button onPress={onEntrarPress} variant='solid' action='primary' size='xl' className='w-full transition disabled:bg-primary-black'>
+          <ButtonSpinner className={loading ? 'data-[active=true]:text-neutral-100' : 'hidden'} color='white' ></ButtonSpinner>
+          <ButtonText className='text-white font-bold pl-4 data-[disabled=true]:text-neutral-500'>Continuar</ButtonText>
+        </Button>
+
+
+
+        <View className='flex flex-col items-center justify-center gap-4 '>
+          <View className='flex-row '>
             <Link href="/(auth)/trocar-senha" className='text-primary-light underline'>
               Esqueci minha senha
             </Link>
           </View>
-        </Card>
 
-        <View className='flex-row'>
-          <Text className='text-white'>Não possui uma conta?</Text>
+          <View className='flex-row'>
+            <Text className='text-white'>Não possui uma conta?</Text>
 
-          <Link href="/(auth)/cadastro">
-            <Text className='text-primary-light'> Cadastre-se</Text>
-          </Link>
+            <Link href="/(auth)/cadastro">
+              <Text className='text-primary-light'> Cadastre-se</Text>
+            </Link>
+          </View>
         </View>
 
       </Pressable>

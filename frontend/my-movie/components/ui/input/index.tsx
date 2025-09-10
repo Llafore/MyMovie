@@ -35,7 +35,7 @@ cssInterop(PrimitiveIcon, {
 });
 
 const inputStyle = tva({
-  base: 'border-secondary-light flex-row overflow-hidden rounded-lg content-center data-[hover=true]:border-outline-400 data-[focus=true]:border-primary data-[focus=true]:hover:border-primary data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-neutral-500 items-center autofill:bg-transparent',
+  base: 'border-secondary-light flex-row overflow-hidden rounded-full content-center data-[hover=true]:border-outline-400 data-[focus=true]:border-primary data-[focus=true]:hover:border-primary data-[disabled=true]:opacity-40 data-[disabled=true]:hover:border-neutral-500 items-center autofill:bg-transparent',
 
   variants: {
     size: {
@@ -47,10 +47,10 @@ const inputStyle = tva({
 
     variant: {
       underlined:
-        'rounded-lg border-b data-[invalid=true]:border-red-400 data-[invalid=true]:data-[focus=true]:border-red-500',
+        'rounded-full border-b data-[invalid=true]:border-red-400 data-[invalid=true]:data-[focus=true]:border-red-500',
 
       outline:
-        'rounded-lg border data-[invalid=true]:border-red-400 data-[invalid=true]:data-[focus=true]:border-red-500',
+        'rounded-full border data-[invalid=true]:border-red-400 data-[invalid=true]:data-[focus=true]:border-red-500',
 
       rounded:
         'rounded-full border data-[invalid=true]:border-red-400 data-[invalid=true]:data-[focus=true]:border-red-500',
@@ -77,7 +77,7 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: 'flex-1 p-4 text-white placeholder:text-neutral-500 h-auto ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
+  base: 'flex-1 py-3 px-6 text-white placeholder:text-neutral-500 h-auto ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed',
 
   parentVariants: {
     variant: {

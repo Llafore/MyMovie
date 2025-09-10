@@ -38,11 +38,11 @@ cssInterop(PrimitiveIcon, {
 });
 
 const buttonStyle = tva({
-  base: 'group/button rounded-lg flex-row items-center justify-center data-[disabled=true]:opacity-40 gap-2',
+  base: 'group/button rounded-full flex-row items-center justify-center data-[disabled=true]:opacity-40 gap-2',
   variants: {
     action: {
       primary:
-        'bg-primary data-[hover=true]:bg-primary-dark data-[active=true]:bg-primary-black',
+        'bg-primary data-[hover=true]:bg-primary-dark data-[active=true]:bg-primary-dark',
       secondary:
         'bg-secondary data-[active=true]:bg-secondary',
       positive:
@@ -64,7 +64,7 @@ const buttonStyle = tva({
       sm: 'px-4 h-9',
       md: 'px-5 h-10',
       lg: 'px-6 h-11',
-      xl: 'px-7 h-12',
+      xl: 'px-7 h-14',
     },
   },
   compoundVariants: [
