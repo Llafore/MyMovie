@@ -125,7 +125,7 @@ export default function ForgotPasswordScreen() {
 
             <Button variant='solid' size='xl' className='w-full' onPress={requestReset}>
               <ButtonSpinner className={loading ? 'data-[active=true]:text-neutral-100' : 'hidden'} color='white' ></ButtonSpinner>
-              <ButtonText className='text-white'>Confirmar código</ButtonText>
+              <ButtonText className='text-white'>Enviar código</ButtonText>
             </Button>
           </View>
         )}

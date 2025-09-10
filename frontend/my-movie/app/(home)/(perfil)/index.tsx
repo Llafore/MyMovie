@@ -3,7 +3,7 @@ import { AlertDialog, AlertDialogBackdrop, AlertDialogBody, AlertDialogContent, 
 import { Button, ButtonText } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import React from "react";
 import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -149,9 +149,7 @@ export default function Perfil() {
       </SignedIn>
 
       <SignedOut>
-        <View className='flex-1 items-center justify-start gap-4 py-4 w-full h-full'>
-          <View className='animate-pulse h-16 w-full bg-neutral-900' />
-        </View>
+        <Redirect href='/(auth)/home'></Redirect>
       </SignedOut>
     </SafeAreaView>
   )

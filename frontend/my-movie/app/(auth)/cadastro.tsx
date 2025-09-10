@@ -170,7 +170,7 @@ export default function Cadastro() {
 
             <Button onPress={onVerifyPress} variant='solid' action='primary' size='xl' className='w-full transition disabled:bg-primary-black'>
               <ButtonSpinner className={loading ? 'data-[active=true]:text-neutral-100' : 'hidden'} color='white'></ButtonSpinner>
-              <ButtonText className='text-white font-bold pl-4 data-[disabled=true]:text-neutral-500'>Verificar</ButtonText>
+              <ButtonText className='text-white font-bold pl-4 data-[disabled=true]:text-neutral-500'>Verificar código</ButtonText>
             </Button>
 
             {mensagemErroCodigo &&
