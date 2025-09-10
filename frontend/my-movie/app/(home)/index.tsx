@@ -1,25 +1,38 @@
-import { SignOutButton } from '@/app/components/SignOutButton'
-import { Card } from '@/components/ui/card'
-import { SignedIn, SignedOut, useSignIn, useUser } from '@clerk/clerk-expo'
-import { Link, Redirect } from 'expo-router'
-import { Suspense } from 'react'
+import { Button, ButtonText } from '@/components/ui/button'
+import { Heading } from '@/components/ui/heading'
+import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
+import { useRouter } from 'expo-router'
 import { Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Page() {
-  const { user, } = useUser()
+  const { user } = useUser()
+  const router = useRouter();
+
+  const redirectPerfil = () => {
+    router.push('/(home)/(perfil)')
+  }
 
   console.log(user)
 
   return (
     <SafeAreaView edges={['top']} className='flex-1 items-center justify-start gap-4 p-4 bg-black'>
       <SignedIn>
-        <View className='flex-1 items-center justify-start gap-4 bg-black w-full h-full'>
-          <Text className='text-white'>Olá, {user?.emailAddresses[0].emailAddress}</Text>
-          <SignOutButton />
+        <View className='flex-1 items-center justify-start gap-6 bg-black w-full h-full'>
+
+          <Heading className="m-0 text-4xl font-bold text-white">
+            Home
+          </Heading>
+
+          <Text className='text-white font-bold'>Seja bem-vindo!</Text>
+
+          <Button variant='outlined' size='xl' className='bg-transparent rounded-full border border-neutral-500 transition data-[active=true]:bg-neutral-700 disabled:bg-primary-black' onPress={redirectPerfil}>
+            <ButtonText className='text-white'>Meu perfil</ButtonText>
+          </Button>
+
         </View>
       </SignedIn>
-      
+
       <SignedOut>
         <View className='flex-1 items-center justify-start gap-4 py-4 w-full h-full'>
           <View className='animate-pulse h-16 w-full bg-neutral-900' />

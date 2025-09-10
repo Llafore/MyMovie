@@ -16,7 +16,7 @@
     "@expo/vector-icons": "^14.1.0",
     "@gluestack-ui/core": "3.0.0",
     "@gluestack-ui/utils": "3.0.0",
-    "@legendapp/motion": "2.3.0",
+    "@legendapp/motion": "2.4.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.17",
