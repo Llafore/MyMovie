@@ -1,19 +1,16 @@
 import { Button, ButtonText } from '@/components/ui/button'
 import { Heading } from '@/components/ui/heading'
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
+import { SignedIn, SignedOut } from '@clerk/clerk-expo'
 import { useRouter } from 'expo-router'
 import { Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Page() {
-  const { user } = useUser()
   const router = useRouter();
 
   const redirectPerfil = () => {
     router.push('/(home)/(perfil)')
   }
-
-  console.log(user)
 
   return (
     <SafeAreaView edges={['top']} className='flex-1 items-center justify-start gap-4 p-4 bg-black'>

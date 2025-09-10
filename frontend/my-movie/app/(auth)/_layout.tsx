@@ -3,7 +3,6 @@ import { Redirect, Stack } from 'expo-router'
 
 export default function AuthRoutesLayout() {
   const { isSignedIn } = useAuth()
-  console.log("no layout")
 
   if (isSignedIn) {
     return <Redirect href={'/(home)'} />
