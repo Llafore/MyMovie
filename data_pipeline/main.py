@@ -1,31 +1,36 @@
-from fetch_tmdb import fetch_popular_media, fetch_top_rated_media, fetch_media_by_genres, fetch_genres
-from normalize_data import normalize_media_data
-from insert_data import insert_media
+from fetch_tmdb import fetch_popular_movies, fetch_top_rated_movies, fetch_movies_by_genres, fetch_genres
+from normalize_data import normalize_movie_data
+from insert_data import insert_movie, insert_genre
+
+def search_genres():
+    print("Fetching genres...")
+    genres = fetch_genres()
+
+    for genre in genres:
+        insert_genre(genre)
+
+    print(f"Fetched {len(genres)} genres")
+    return genres
+
+def search_movies(genres: list[dict[int | str]] = None):
+    print("Fetching movies...")
+    movies = (fetch_top_rated_movies() + fetch_popular_movies() + fetch_movies_by_genres(genres))
+
+    for movie in movies:
+        normalized = normalize_movie_data(movie)
+        insert_movie(normalized)
+
+    print(f"Fetched {len(movies)} TMDb movies")
+
+def search_tv_shows():
+    pass
 
 def run_pipeline():
     print("Accessing the TMDB API...")
-
-    movie_genres_map = fetch_genres("movie")
-    tv_genres_map = fetch_genres("tv")
-
-    genres_map = {v: k for k, v in movie_genres_map.items()}
-    genres_map.update({v: k for k, v in tv_genres_map.items()})
-
-    media = []
-    for media_type in ["movie", "tv"]:
-        media.extend(fetch_top_rated_media(media_type))
-        media.extend(fetch_popular_media(media_type))
-        media.extend(fetch_media_by_genres(media_type))
-
-    print(f"Fetched {len(media)} media items")
-
-    for item in media:
-        media_type = "movie" if "title" in item else "tv"
-        normalized = normalize_media_data(item, media_type, genres_map)
-        insert_media(normalized)
-        print(f"Inserted/Updated: {normalized['title']}")
-    
-    print(f"Completed search for {len(media)} TMDb media items")
+    genres = search_genres()
+    search_movies(genres)
+    search_tv_shows()
+    print("Data pipeline done...")
 
 if __name__ == "__main__":
     run_pipeline()

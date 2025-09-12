@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict
 
 import requests
 import time
@@ -9,53 +9,55 @@ load_dotenv()
 
 API_KEY = os.getenv("TMDB_API_KEY")
 BASE_URL = "https://api.themoviedb.org/3"
+LANGUAGE = "pt-BR"
 
-def fetch_genres(media_type: str) -> Dict[str, int]:
-    print(f"Fetching {media_type} genres...")
-    params = {"api_key": API_KEY}
-    response = requests.get(f"{BASE_URL}/genre/{media_type}/list", params=params)
-    if response.status_code == 200:
-        data = response.json()
-        return {genre["name"]: genre["id"] for genre in data.get("genres", [])}
-    else:
-        print(f"Problems accessing the TMDB API...\n{response.status_code} - {response.text}")
-        return {}
+def fetch_genres():
+    params = {
+        "api_key": API_KEY
+    }
 
-def fetch_from_endpoint(endpoint: str, params: Dict, pages: int = 1) -> List[Dict]:
-    all_results = []
+    movie_response = requests.get(f"{BASE_URL}/genre/movie/list", params=params)
+    tv_response = requests.get(f"{BASE_URL}/genre/tv/list", params=params)
+
+    return movie_response.json()["genres"] + tv_response.json()["genres"]
+
+def fetch_movies_from_endpoint(endpoint: str, params: Dict, pages: int = 1):
+    all_movies = []
     for page in range(1, pages + 1):
         params["page"] = page
         response = requests.get(f"{BASE_URL}{endpoint}", params=params)
         if response.status_code == 200:
             data = response.json()
-            all_results.extend(data.get("results", []))
+            all_movies.extend(data.get("results", []))
         else:
             print(f"Problems accessing the TMDB API...\n{response.status_code} - {response.text}")
         time.sleep(0.25)
-    return all_results
+    return all_movies
 
-def fetch_top_rated_media(media_type: str, pages: int = 10) -> List[Dict]:
-    print(f"Fetching top rated {media_type}s...")
+def fetch_top_rated_movies(pages: int = 10):
+    print("Fetching top rated movies...")
     params = {
-        "api_key": API_KEY,
-        "sort_by": "vote_average.desc",
-        "vote_count.gte": 100
+        "api_key": API_KEY
     }
-    return fetch_from_endpoint(f"/discover/{media_type}", params, pages)
 
-def fetch_popular_media(media_type: str, pages: int = 5) -> List[Dict]:
-    print(f"Fetching popular {media_type}s...")
-    params = {"api_key": API_KEY}
-    return fetch_from_endpoint(f"/{media_type}/popular", params, pages)
+    for page in range(1, pages + 1):
+        url = f"/movie/top_rated?language={LANGUAGE}&page={page}"
 
-def fetch_media_by_genres(media_type: str, pages_by_genre: int = 5) -> List[Dict]:
-    print(f"Fetching {media_type}s by genres...")
-    all_media = []
-    params = {"api_key": API_KEY}
-    genres = fetch_genres(media_type)
+    return fetch_movies_from_endpoint(url, params)
 
-    for genre, genre_id in genres.items():
-        params["with_genres"] = str(genre_id)
-        media = fetch_from_endpoint(f"/discover/{media_type}", params, pages_by_genre)
-        all_media.extend(media)
-    return all_media
+def fetch_popular_movies(pages: int = 5):
+    print("Fetching popular movies...")
+    params = { "api_key": API_KEY }
+
+    return fetch_movies_from_endpoint("/movie/popular", params, pages)
+
+def fetch_movies_by_genres(genres, pages_by_genre: int = 1):
+    print("Fetching movies by genres...")
+    all_movies = []
+    params = { "api_key": API_KEY }
+
+    for genre  in genres:
+        params["with_genres"] = str(genre["id"])
+        movies = fetch_movies_from_endpoint("/discover/movie", params, pages_by_genre)
+        all_movies.extend(movies)
+    return all_movies

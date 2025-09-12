@@ -1,55 +1,76 @@
 from db_connection import get_connection
 
-def insert_media(media):
+def insert_movie_genre(movie):
     conn = get_connection()
     cursor = conn.cursor()
 
-    for genre_name in media.get("genres", []):
-        if genre_name:
-            cursor.execute("INSERT IGNORE INTO genres (name) VALUES (%s)", (genre_name,))
+    sql = """
+        INSERT INTO movie_genre (movie_id, genre_id)
+        VALUES (%s, %s)
+        ON DUPLICATE KEY UPDATE 
+          movie_id = VALUES(movie_id),
+          genre_id = VALUES(genre_id);
+    """
+
+    for genre_id in movie["genre_ids"]:
+        values = (movie["id"], genre_id)
+        cursor.execute(sql, values)
+
     conn.commit()
+    cursor.close()
+    conn.close()
 
-    genre_ids = []
-    for genre_name in media.get("genres", []):
-        if genre_name:
-            cursor.execute("SELECT id FROM genres WHERE name = %s", (genre_name,))
-            result = cursor.fetchone()
-            if result:
-                genre_ids.append(result[0])
 
-    release_date = media.get("release_date")
-    if not release_date or str(release_date).strip() == "":
+def insert_movie(movie):
+    conn = get_connection()
+    cursor = conn.cursor()
+    release_date = movie["release_date"]
+
+    if not release_date or release_date.strip() == "":
         release_date = None
 
     sql = (
-        "INSERT INTO media (id, title, description, release_date, poster_path, backdrop_path, media_type) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s) "
+        "INSERT INTO movies (id, title, description, release_date, poster_path, backdrop_path) "
+        "VALUES (%s, %s, %s, %s, %s, %s) "
         "ON DUPLICATE KEY UPDATE "
         "title = VALUES(title), "
         "description = VALUES(description), "
         "release_date = VALUES(release_date), "
         "poster_path = VALUES(poster_path), "
-        "backdrop_path = VALUES(backdrop_path), "
-        "media_type = VALUES(media_type)"
+        "backdrop_path = VALUES(backdrop_path)"
     )
 
     values = (
-        media["id"],
-        media["title"],
-        media["description"],
+        movie["id"],
+        movie["title"],
+        movie["description"],
         release_date,
-        media["poster_path"],
-        media["backdrop_path"],
-        media["media_type"]
+        movie["poster_path"],
+        movie["backdrop_path"]
     )
 
     cursor.execute(sql, values)
     conn.commit()
+    cursor.close()
+    conn.close()
+    insert_movie_genre(movie)
 
-    # Insert media_genres
-    for genre_id in genre_ids:
-        cursor.execute("INSERT IGNORE INTO media_genres (media_id, genre_id) VALUES (%s, %s)", (media["id"], genre_id))
+
+def insert_genre(genre):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    sql = (
+        "INSERT INTO genre (id, name) "
+        "VALUES (%s, %s) "
+        "ON DUPLICATE KEY UPDATE "
+        "id = VALUES(id), "
+        "name = VALUES(name)"
+    )
+
+    values = (genre["id"], genre["name"])
+
+    cursor.execute(sql, values)
     conn.commit()
-
     cursor.close()
     conn.close()
