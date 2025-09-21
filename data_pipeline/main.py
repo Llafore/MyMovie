@@ -1,19 +1,46 @@
-from fetch_tmdb import fetch_popular_movies, fetch_top_rated_movies, fetch_movies_by_genres
-from normalize_data import normalize_movie_data
-from insert_data import insert_movie
+import sys
+import os
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+
+from fetch_tmdb import fetch_popular_movies, fetch_top_rated_movies, fetch_movies_by_genres, fetch_genres
+from normalize_data import normalize_media_data, normalize_genres, normalize_media_genres
+from backend.dao.media_dao import MediaDAO
+from backend.dao.genre_dao import GenreDAO
+
+def search_genres():
+    print("Fetching genres...")
+    dao = GenreDAO()
+    genres = fetch_genres()
+    normalized_genre = normalize_genres(genres)
+    dao.insert_genres(normalized_genre)
+
+    print(f"Fetched {len(genres)} genres")
+    return genres
+
+def search_movies(genres: list[dict[int | str]] = None):
+    print("Fetching movies...")
+    dao = MediaDAO()
+    movies = (fetch_top_rated_movies(pages=1) + fetch_popular_movies(pages=1) + fetch_movies_by_genres(genres, pages_by_genre=1))
+
+    normalized_media = normalize_media_data(movies, is_movie=True)
+    normalized_media_genres = normalize_media_genres(movies)
+
+    dao.insert_media(normalized_media)
+    dao.insert_media_genres(normalized_media_genres)
+
+    print(f"Fetched {len(movies)} TMDb movies")
+
+def search_tv_shows():
+    pass
 
 def run_pipeline():
     print("Accessing the TMDB API...")
-
-    movies = (fetch_top_rated_movies() + fetch_popular_movies() + fetch_movies_by_genres())
-
-    print(f"Fetched {len(movies)} movies")
-
-    for movie in movies:
-        normalized = normalize_movie_data(movie)
-        insert_movie(normalized)
-        print(f"Inserted/Updated: {normalized['title']}")
-    print(f"Completed search for {len(movies)} TMDb movies")
+    genres = search_genres()
+    search_movies(genres)
+    search_tv_shows()
+    print("Data pipeline done...")
 
 if __name__ == "__main__":
     run_pipeline()
