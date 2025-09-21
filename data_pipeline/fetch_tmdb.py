@@ -45,13 +45,13 @@ def fetch_top_rated_movies(pages: int = 10):
 
     return fetch_movies_from_endpoint(url, params)
 
-def fetch_popular_movies(pages: int = 5):
+def fetch_popular_movies(pages: int = 10):
     print("Fetching popular movies...")
     params = { "api_key": API_KEY }
 
     return fetch_movies_from_endpoint("/movie/popular", params, pages)
 
-def fetch_movies_by_genres(genres, pages_by_genre: int = 1):
+def fetch_movies_by_genres(genres, pages_by_genre: int = 5):
     print("Fetching movies by genres...")
     all_movies = []
     params = { "api_key": API_KEY }
