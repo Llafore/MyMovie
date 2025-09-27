@@ -9,7 +9,7 @@ load_dotenv()
 
 API_KEY = os.getenv("TMDB_API_KEY")
 BASE_URL = "https://api.themoviedb.org/3"
-LANGUAGE = "pt-BR"
+LANGUAGE = "en-US"
 
 def fetch_genres():
     params = {
@@ -21,7 +21,7 @@ def fetch_genres():
 
     return movie_response.json()["genres"] + tv_response.json()["genres"]
 
-def fetch_movies_from_endpoint(endpoint: str, params: Dict, pages: int = 1):
+def fetch_media_from_endpoint(endpoint: str, params: Dict, pages: int = 1):
     all_movies = []
     for page in range(1, pages + 1):
         params["page"] = page
@@ -43,13 +43,16 @@ def fetch_top_rated_movies(pages: int = 10):
     for page in range(1, pages + 1):
         url = f"/movie/top_rated?language={LANGUAGE}&page={page}"
 
-    return fetch_movies_from_endpoint(url, params)
+    return fetch_media_from_endpoint(url, params)
 
 def fetch_popular_movies(pages: int = 10):
     print("Fetching popular movies...")
     params = { "api_key": API_KEY }
 
-    return fetch_movies_from_endpoint("/movie/popular", params, pages)
+    for page in range(1, pages + 1):
+        url = f"/movie/popular?language={LANGUAGE}&page={page}"
+
+    return fetch_media_from_endpoint("/movie/popular", params, pages)
 
 def fetch_movies_by_genres(genres, pages_by_genre: int = 5):
     print("Fetching movies by genres...")
@@ -58,6 +61,35 @@ def fetch_movies_by_genres(genres, pages_by_genre: int = 5):
 
     for genre  in genres:
         params["with_genres"] = str(genre["id"])
-        movies = fetch_movies_from_endpoint("/discover/movie", params, pages_by_genre)
+        movies = fetch_media_from_endpoint(f"/discover/movie?language={LANGUAGE}", params, pages_by_genre)
+        all_movies.extend(movies)
+    return all_movies
+
+def fetch_top_rated_series(pages: int = 10):
+    print("Fetching top rated series...")
+    params = {"api_key": API_KEY}
+
+    for page in range(1, pages + 1):
+        url = f"/tv/top_rated?language={LANGUAGE}&page={page}"
+
+    return fetch_media_from_endpoint(url, params)
+
+def fetch_popular_series(pages: int = 10):
+    print("Fetching popular series...")
+    params = {"api_key": API_KEY}
+
+    for page in range(1, pages + 1):
+        url = f"/tv/popular?language={LANGUAGE}&page={page}"
+
+    return fetch_media_from_endpoint(url, params, pages)
+
+def fetch_series_by_genres(genres, pages_by_genre: int = 5):
+    print("Fetching series by genres...")
+    all_movies = []
+    params = {"api_key": API_KEY}
+
+    for genre in genres:
+        params["with_genres"] = str(genre["id"])
+        movies = fetch_media_from_endpoint(f"/discover/tv?language={LANGUAGE}", params, pages_by_genre)
         all_movies.extend(movies)
     return all_movies

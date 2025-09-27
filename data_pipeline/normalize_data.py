@@ -10,9 +10,10 @@ def normalize_media_data(medias: list[dict], is_movie: bool) -> list[dict]:
 
         m = {
             "id": media["id"],
-            "title": media["title"],
+            "title": media["title"] if "title" in media else media["name"],
             "is_movie": is_movie,
-            "release_date": media.get("release_date"),
+            "description": media["overview"],
+            "release_date": media["release_date"] if "release_date" in media else media["first_air_date"],
             "poster_path": media.get("poster_path"),
             "backdrop_path": media.get("backdrop_path"),
         }
