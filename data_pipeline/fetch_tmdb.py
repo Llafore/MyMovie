@@ -9,7 +9,7 @@ load_dotenv()
 
 API_KEY = os.getenv("TMDB_API_KEY")
 BASE_URL = "https://api.themoviedb.org/3"
-LANGUAGE = "en-US"
+LANGUAGE = "pt-BR"
 
 def fetch_genres():
     params = {
