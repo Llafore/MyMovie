@@ -13,3 +13,12 @@ class GenreDAO:
 
     def insert_genres(self, genres: list[dict]):
         self.supabase.table('genre').upsert(genres).execute()
+
+    def get_all_genres(self) -> list[dict]:
+        return (
+            self.supabase.
+            table('genre')
+            .select('*')
+            .execute()
+            .data
+        )

@@ -14,8 +14,17 @@ class MediaDAO:
     def load_all_media(self) -> list[dict]:
         return self.supabase.table('media').select('*').execute()
 
+    def load_media_to_df_content(self):
+        return (
+            self.supabase
+            .table('media')
+            .select('*, media_genres!inner(*)')
+            .execute()
+            .data
+        )
+
     def insert_media(self, medias: list[dict]):
         self.supabase.table('media').upsert(medias).execute()
 
     def insert_media_genres(self, medias_genres: list[dict]):
-        self.supabase.table('media_genre').upsert(medias_genres).execute()
+        self.supabase.table('media_genres').upsert(medias_genres).execute()

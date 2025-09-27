@@ -40,8 +40,10 @@ def search_series(genres: list[dict[int | str]] = None):
     series = (fetch_top_rated_series(pages=1) + fetch_popular_series(pages=1) + fetch_series_by_genres(genres, pages_by_genre=1))
 
     normalized_series = normalize_media_data(series, is_movie=False)
+    normalized_media_genres = normalize_media_genres(series)
 
     dao.insert_media(normalized_series)
+    dao.insert_media_genres(normalized_media_genres)
 
     print(f"Fetched {len(normalized_series)} TMDb series")
 
