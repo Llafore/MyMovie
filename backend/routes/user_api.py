@@ -6,20 +6,12 @@ from backend.models.user import User
 
 
 class UserCreate(BaseModel):
-    name: str = ""
+    id: int
+    name: str
     email: str
     password: str
 
 class UserResponse(BaseModel):
-    id: int
-    name: str
-    email: str
-
-class LoginRequest(BaseModel):
-    email: str
-    password: str
-
-class LoginResponse(BaseModel):
     id: int
     name: str
     email: str
@@ -31,17 +23,8 @@ router = APIRouter(
 
 dao = UserDAO()
 
-@router.post('/login', response_model=LoginResponse)
-def login_user(credentials: LoginRequest):
-    user = dao.login(credentials.email, credentials.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    return user
-
-
-@router.post('/')
+@router.post('/new_user', response_model=UserResponse)
 def create_user(user: UserCreate):
-    new_user = User(name=user.name, email=user.email, password=user.password)
+    new_user = User(name=user.name, email=user.email, password=user.password, user_id=user.id)
     dao.create_user(new_user)
     return new_user

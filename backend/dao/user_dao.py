@@ -19,26 +19,25 @@ class UserDAO:
                 .select('*')
                 .eq('email', email)
                 .execute()
-                ).data[0]
+                ).data
 
         if not data:
             return None
 
-        return User(name=data['name'], email=data['email'], password=data['password'], user_id=data['id'])
+        return User(name=data[0]['name'],
+                    email=data[0]['email'],
+                    password=data[0]['password'],
+                    user_id=data[0]['id']
+                    )
 
     def create_user(self, user: User):
         if self.find_by_email(user.email):
             return False
         user_dict = {
+            'id': user.id,
             'email': user.email,
             'name': user.name,
             'password': user.password,
         }
         self.supabase.table('user').insert(user_dict).execute()
         return True
-
-    def login(self, email: str, password: str):
-        user = self.find_by_email(email)
-        if user and user.password == password:
-            return user
-        return None
