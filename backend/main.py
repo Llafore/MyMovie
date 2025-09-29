@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import user_api, media_api
+from backend.routes import user_api, media_api
 
 import uvicorn
 
