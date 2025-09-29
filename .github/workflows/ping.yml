@@ -1,0 +1,14 @@
+name: Render ping
+
+on:
+  schedule:
+    - cron: '*/14 * * * *'  # a cada 14 minutos
+  workflow_dispatch:  # permite acionamento manual
+
+jobs:
+  curl-website:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run cURL on Website
+        run: curl -I https://mymovie-nhhq.onrender.com/health-check
