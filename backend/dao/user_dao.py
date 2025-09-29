@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-from backend.models.user import User
+from models.user import User
 
 load_dotenv()
 
