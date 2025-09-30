@@ -93,23 +93,41 @@ class MediaDAO:
 
     def insert_media_genres(self, medias_genres: list[dict]):
         self.supabase.table('media_genres').upsert(medias_genres).execute()
-    
+
+    def insert_rating_by_batch(self, clerk_id: str, ratings: list):
+        data = [
+            {"clerk_id": clerk_id, "media_id": r.media_id, "score": r.score}
+            for r in ratings
+        ]
+        self.supabase.table("rating").insert(data).execute()
+
+    def get_medias(self, medias_ids: list[int]):
+        return (self.supabase
+                .table('media')
+                .select('*')
+                .in_('id', medias_ids)
+                .execute()
+                .data)
+
+    def get_ratings_by_clerk_id(self, clerk_id):
+        return (self.supabase
+                .table('rating')
+                .select('media_id, score')
+                .eq('clerk_id', clerk_id)
+                .execute()
+                .data)
+
 if __name__ == '__main__':
     dao = MediaDAO()
 
     ts = time.perf_counter()
-    data = dao.load_all_media()
+    data = dao.load_media_to_df_content()
     te = time.perf_counter()
     print(f'Tempo de carga de mídia: {te - ts:0.4f}')
 
     ts = time.perf_counter()
-    data_banco = dao.load_all_media_banco()
+    data_banco = dao.load_media_with_genres()
     te = time.perf_counter()
     print(f'Tempo de carga de mídia do banco: {te - ts:0.4f}')
     print(len(data))
     print(len(data_banco))
-
-    paginated = dao.load_media_paginated(0, 9)
-    print(paginated[0].keys())
-    print(type(paginated[0]["description"]))
-    print(paginated[0]["is_movie"])

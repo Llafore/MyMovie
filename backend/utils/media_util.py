@@ -1,4 +1,4 @@
-from backend.utils.genre_util import GenreUtil
+from utils.genre_util import GenreUtil
 
 
 class MediaUtil:

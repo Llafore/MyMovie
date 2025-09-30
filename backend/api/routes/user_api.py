@@ -1,18 +1,18 @@
-from backend.dao.user_dao import UserDAO
+from dao.user_dao import UserDAO
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from backend.models.user import User
+from models.user import User
 
 
 class UserCreate(BaseModel):
-    id: int
+    clerk_id: str
     name: str
     email: str
     password: str
 
 class UserResponse(BaseModel):
-    id: int
+    clerk_id: str
     name: str
     email: str
 
@@ -25,6 +25,9 @@ dao = UserDAO()
 
 @router.post('/new_user', response_model=UserResponse)
 def create_user(user: UserCreate):
-    new_user = User(name=user.name, email=user.email, password=user.password, user_id=user.id)
+    new_user = User(clerk_id=user.clerk_id,
+                    name=user.name,
+                    email=user.email,
+                    password=user.password)
     dao.create_user(new_user)
     return new_user

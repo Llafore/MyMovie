@@ -3,8 +3,8 @@ from scipy.sparse import hstack
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from backend.dao.media_dao import MediaDAO
-from backend.utils.media_util import MediaUtil
+from dao.media_dao import MediaDAO
+from utils.media_util import MediaUtil
 
 """
 Dictionary of Terms: 
