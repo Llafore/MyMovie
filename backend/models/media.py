@@ -13,3 +13,19 @@ class MediaDTO(BaseModel):
 
 class MediaResponse(BaseModel):
     media: list[MediaDTO]
+
+class Rating(BaseModel):
+    media_id: int
+    score: float
+
+class RatingBatchRequest(BaseModel):
+    clerk_id: str
+    ratings: list[Rating]
+
+class RatingBatchResponse(BaseModel):
+    clerk_id: str
+    ratings: list[Rating]
+
+class RecommendationRequest(BaseModel):
+    clerk_id: str
+    limit: int = 10

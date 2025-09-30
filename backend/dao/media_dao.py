@@ -93,7 +93,30 @@ class MediaDAO:
 
     def insert_media_genres(self, medias_genres: list[dict]):
         self.supabase.table('media_genres').upsert(medias_genres).execute()
-    
+
+    def insert_rating_by_batch(self, clerk_id: str, ratings: list):
+        data = [
+            {"clerk_id": clerk_id, "media_id": r.media_id, "score": r.score}
+            for r in ratings
+        ]
+        self.supabase.table("rating").insert(data).execute()
+
+    def get_medias(self, medias_ids: list[int]):
+        return (self.supabase
+                .table('media')
+                .select('*')
+                .in_('id', medias_ids)
+                .execute()
+                .data)
+
+    def get_ratings_by_clerk_id(self, clerk_id):
+        return (self.supabase
+                .table('rating')
+                .select('media_id, score')
+                .eq('clerk_id', clerk_id)
+                .execute()
+                .data)
+
 if __name__ == '__main__':
     dao = MediaDAO()
 

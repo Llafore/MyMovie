@@ -24,17 +24,17 @@ class UserDAO:
         if not data:
             return None
 
-        return User(name=data[0]['name'],
+        return User(clerk_id=data[0]['clerk_id'],
+                    name=data[0]['name'],
                     email=data[0]['email'],
-                    password=data[0]['password'],
-                    user_id=data[0]['id']
+                    password=data[0]['password']
                     )
 
     def create_user(self, user: User):
         if self.find_by_email(user.email):
             return False
         user_dict = {
-            'id': user.id,
+            'clerk_id': user.clerk_id,
             'email': user.email,
             'name': user.name,
             'password': user.password,
