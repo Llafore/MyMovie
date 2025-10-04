@@ -16,12 +16,27 @@ class UserResponse(BaseModel):
     name: str
     email: str
 
+class UserExistsRequest(BaseModel):
+    id: str
+
+class UserExistsResponse(BaseModel):
+    exists: bool
+
 router = APIRouter(
     prefix='/user',
     tags=['users'],
 )
 
 dao = UserDAO()
+
+@router.post('/check_user', response_model=UserExistsResponse)
+def check_user(request_body: UserExistsRequest):
+    user = dao.find_by_id(request_body.id)
+    if user:
+        return UserExistsResponse(exists=True)
+    if not user:
+        return UserExistsResponse(exists=False)
+    raise HTTPException(status_code=500, detail="Error checking user")
 
 @router.post('/new_user', response_model=UserResponse)
 def create_user(user: UserCreate):
