@@ -3,8 +3,6 @@ from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
 from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
 
-from requests.models import Response
-
 router = APIRouter(
     prefix='/media',
     tags=['Media'],
@@ -40,9 +38,9 @@ def post_rating(batch: RatingBatchRequest):
 def get_startup_medias():
     try:
         medias_startup_mock = [283, 456, 497, 1396, 1416, 1429, 2190, 2316, 14424, 93405]
-        data = dao.get_medias(medias_startup_mock)
-        media_dtos = [MediaDTO(**media) for media in data]
-        return MediaResponse(media=media_dtos)
+        medias_dict = dao.get_medias(medias_startup_mock)
+        medias_dtos = [MediaDTO(**media) for media in medias_dict]
+        return MediaResponse(media=medias_dtos)
     except Exception as e:
         print(f"Error fetching startup medias: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching startup medias: {str(e)}")

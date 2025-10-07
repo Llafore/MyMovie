@@ -1,26 +1,7 @@
 from dao.user_dao import UserDAO
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 
-from models.user import User
-
-
-class UserCreate(BaseModel):
-    clerk_id: str
-    name: str
-    email: str
-    password: str
-
-class UserResponse(BaseModel):
-    clerk_id: str
-    name: str
-    email: str
-
-class UserExistsRequest(BaseModel):
-    id: str
-
-class UserExistsResponse(BaseModel):
-    exists: bool
+from models.user import User, UserExistsResponse, UserExistsRequest, UserResponse, UserCreate
 
 router = APIRouter(
     prefix='/user',
