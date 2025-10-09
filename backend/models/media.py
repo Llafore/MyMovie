@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class MediaDTO(BaseModel):
@@ -10,6 +10,7 @@ class MediaDTO(BaseModel):
     poster_path: Optional[str]
     backdrop_path: Optional[str]
     is_movie: Optional[bool] = True
+    similarity_score: Optional[float] = None
 
 class MediaResponse(BaseModel):
     media: list[MediaDTO]
@@ -28,4 +29,6 @@ class RatingBatchResponse(BaseModel):
 
 class RecommendationRequest(BaseModel):
     clerk_id: str
-    limit: int = 10
+    page_number: int = Field(default=1, ge=1)
+    page_size: int = Field(default=10, ge=1)
+    refresh: bool = Field(default=False)

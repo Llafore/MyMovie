@@ -42,20 +42,37 @@ class Engine:
         sim_df = pd.DataFrame(sim, index=df['id'], columns=df['id'])
 
         return sim_df
+    def recommend_media(
+        self,
+        user_history_scores: dict[int, int]
+    ) -> pd.Series:
+        media_similarity_scores = pd.Series(0.0, index=self.ctt_sim_df.index, dtype=float)
 
-    def recommend_media(self, past_recommendations: dict[int, int], top_n=10):
-        score_ctt = pd.Series(0.0, index=self.ctt_sim_df.index, dtype=float)
+        for media_id, user_score in user_history_scores.items():
+            if media_id in self.ctt_sim_df.columns:
+                media_similarity_scores += user_score * self.ctt_sim_df[media_id]
 
-        for media, score in past_recommendations.items():
-            if media in self.ctt_sim_df.columns:
-                score_ctt += score * self.ctt_sim_df[media]
+        for media_id in user_history_scores:
+            media_similarity_scores.pop(media_id)
 
-        for past_recommendation in past_recommendations:
-            if past_recommendation in score_ctt.index:
-                score_ctt.drop(past_recommendation, inplace=True)
+        sorted_scores = media_similarity_scores.sort_values(ascending=False)
+        print(sorted_scores)
 
-        recommendations = score_ctt.sort_values(ascending=False).head(top_n)
-        return recommendations
+        return sorted_scores
+
+    # def recommend_media(self, past_recommendations: dict[int, int], top_n=10):
+    #     score_ctt = pd.Series(0.0, index=self.ctt_sim_df.index, dtype=float)
+
+    #     for media, score in past_recommendations.items():
+    #         if media in self.ctt_sim_df.columns:
+    #             score_ctt += score * self.ctt_sim_df[media]
+
+    #     for past_recommendation in past_recommendations:
+    #         if past_recommendation in score_ctt.index:
+    #             score_ctt.drop(past_recommendation, inplace=True)
+
+    #     recommendations = score_ctt.sort_values(ascending=False).head(top_n)
+    #     return recommendations
 
 
 if __name__ == '__main__':
