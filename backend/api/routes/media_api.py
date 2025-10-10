@@ -37,6 +37,14 @@ def post_rating(batch: RatingBatchRequest):
         print(f"Error posting rating: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error inserting reviews: {str(e)}")
 
+
+@router.get('/check_ratings')
+def get_check_ratings(user: str):
+    user_ratings = dao.get_ratings_by_clerk_id(user)
+    if not user_ratings:
+        raise HTTPException(status_code=404, detail="User reviews not found")
+    return {"status": "ok"} 
+
 @router.get('/startup_medias', response_model=MediaResponse)
 def get_startup_medias():
     try:
