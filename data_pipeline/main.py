@@ -24,26 +24,24 @@ def search_genres():
 def search_movies(genres: list[dict[int | str]] = None):
     print("Fetching movies...")
     dao = MediaDAO()
-    movies = (fetch_top_rated_movies(pages=10) + fetch_popular_movies(pages=10) + fetch_movies_by_genres(genres, pages_by_genre=10))
+    movies = (fetch_top_rated_movies(pages=1) + fetch_popular_movies(pages=1) + fetch_movies_by_genres(genres, pages_by_genre=1))
 
-    normalized_media = normalize_media_data(movies, is_movie=True)
-    normalized_media_genres = normalize_media_genres(movies)
+    normalized_media, normalized_medias_genres = normalize_media_data(movies, is_movie=True)
 
     dao.insert_media(normalized_media)
-    dao.insert_media_genres(normalized_media_genres)
+    dao.insert_media_genres(normalized_medias_genres)
 
     print(f"Fetched {len(normalized_media)} TMDb movies")
 
 def search_series(genres: list[dict[int | str]] = None):
     print("Fetching series...")
     dao = MediaDAO()
-    series = (fetch_top_rated_series(pages=10) + fetch_popular_series(pages=10) + fetch_series_by_genres(genres, pages_by_genre=10))
+    series = (fetch_top_rated_series(pages=1) + fetch_popular_series(pages=1) + fetch_series_by_genres(genres, pages_by_genre=1))
 
-    normalized_series = normalize_media_data(series, is_movie=False)
-    normalized_media_genres = normalize_media_genres(series)
+    normalized_series, normalized_medias_genres = normalize_media_data(series, is_movie=False)
 
     dao.insert_media(normalized_series)
-    dao.insert_media_genres(normalized_media_genres)
+    dao.insert_media_genres(normalized_medias_genres)
 
     print(f"Fetched {len(normalized_series)} TMDb series")
 

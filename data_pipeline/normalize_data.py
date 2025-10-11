@@ -1,5 +1,6 @@
-def normalize_media_data(medias: list[dict], is_movie: bool) -> list[dict]:
+def normalize_media_data(medias: list[dict], is_movie: bool):
     normalized_media = []
+    normalized_medias_genres = []
     seen = set()
 
     for media in medias:
@@ -20,8 +21,10 @@ def normalize_media_data(medias: list[dict], is_movie: bool) -> list[dict]:
         if m["release_date"] == '': m["release_date"] = None
 
         normalized_media.append(m)
+        media_genres = normalize_media_genres(media)
+        normalized_medias_genres.extend(media_genres)
 
-    return normalized_media
+    return normalized_media, normalized_medias_genres
 
 def normalize_genres(genres: list[dict[int | int]]) -> list[dict]:
     normalized_genres = []
@@ -36,12 +39,11 @@ def normalize_genres(genres: list[dict[int | int]]) -> list[dict]:
 
     return normalized_genres
 
-def normalize_media_genres(medias: list[dict]) -> list[dict]:
+def normalize_media_genres(media: dict) -> list[dict]:
     normalized_media_genres = []
 
-    for media in medias:
-        mid = media["id"]
-        for genre_id in media["genre_ids"]:
-            normalized_media_genres.append({"media_id": mid, "genre_id": genre_id})
+    mid = media["id"]
+    for genre_id in media["genre_ids"]:
+        normalized_media_genres.append({"media_id": mid, "genre_id": genre_id})
 
     return normalized_media_genres
