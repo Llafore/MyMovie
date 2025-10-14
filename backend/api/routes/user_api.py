@@ -1,3 +1,4 @@
+import os
 from dao.user_dao import UserDAO
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -10,6 +11,10 @@ from clerk_backend_api.models.clerkerrors import ClerkErrors
 router = APIRouter(
     prefix='/user',
     tags=['users'],
+)
+
+clerk = Clerk(
+    bearer_auth=os.getenv("CLERK_SECRET_KEY")
 )
 
 dao = UserDAO()
@@ -37,26 +42,23 @@ def create_user(user: UserCreate):
 
 @router.delete('/delete', response_model=UserDeleteResponse)
 async def delete_user(deleteBody: UserDelete, token: str = Depends(get_bearer_token)):
-    with Clerk(
-        bearer_auth=token,
-    ) as clerk:
-        try:
-            print(token)
-            dao.delete_user(deleteBody.clerk_id)
+    try:
+        print(token)
+        dao.delete_user(deleteBody.clerk_id)
 
-            res = clerk.users.delete(user_id=deleteBody.clerk_id)
-            assert res is not None
+        res = clerk.users.delete(user_id=deleteBody.clerk_id)
+        assert res is not None
 
-            return UserDeleteResponse(detail="deleted succesfully.")
+        return UserDeleteResponse(detail="deleted succesfully.")
 
-        except ClerkErrors as ce:
-            print(f"Clerk error deleting user: {ce}")
-            raise HTTPException(status_code=500, detail=f"Clerk error deleting user: {ce.data.errors[0].message}")
+    except ClerkErrors as ce:
+        print(f"Clerk error deleting user: {ce}")
+        raise HTTPException(status_code=500, detail=f"Clerk error deleting user: {ce.data.errors[0].message}")
 
-        except AssertionError:
-            raise HTTPException(status_code=404, detail="User not found in Clerk.")
+    except AssertionError:
+        raise HTTPException(status_code=404, detail="User not found in Clerk.")
 
-        except Exception as e:
-            print(type(e))
-            print(f"Error deleting user: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Error deleting user: {str(e)}")   
+    except Exception as e:
+        print(type(e))
+        print(f"Error deleting user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting user: {str(e)}")   
