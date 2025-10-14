@@ -31,8 +31,7 @@ def check_user(request_body: UserExistsRequest):
 def create_user(user: UserCreate):
     new_user = User(clerk_id=user.clerk_id,
                     name=user.name,
-                    email=user.email,
-                    password=user.password)
+                    email=user.email)
     dao.create_user(new_user)
     return new_user
 
@@ -42,6 +41,7 @@ async def delete_user(deleteBody: UserDelete, token: str = Depends(get_bearer_to
         bearer_auth=token,
     ) as clerk:
         try:
+            print(token)
             dao.delete_user(deleteBody.clerk_id)
 
             res = clerk.users.delete(user_id=deleteBody.clerk_id)
