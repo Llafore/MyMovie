@@ -58,3 +58,6 @@ class UserDAO:
         }
         self.supabase.table('user').insert(user_dict).execute()
         return True
+
+    def delete_user(self, clerk_id: str):
+        self.supabase.table('user').delete().eq('clerk_id', clerk_id).execute()
