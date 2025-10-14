@@ -117,6 +117,22 @@ class MediaDAO:
                 .execute()
                 .data)
 
+    def load_series_ids(self) -> list[int]:
+        return (self.supabase
+                .table('media')
+                .select('id')
+                .eq('is_movie', False)
+                .execute()
+                .data)
+
+    def load_movies_ids(self) -> list[int]:
+        return (self.supabase
+                .table('media')
+                .select('id')
+                .eq('is_movie', True)
+                .execute()
+                .data)
+
 if __name__ == '__main__':
     dao = MediaDAO()
 

@@ -47,3 +47,27 @@ def normalize_media_genres(media: dict) -> list[dict]:
         normalized_media_genres.append({"media_id": mid, "genre_id": genre_id})
 
     return normalized_media_genres
+
+def normalize_credits(credits: list[dict]):
+    peoples = []
+    seen = set()
+    normalized_credits = []
+
+    for media in credits:
+        for people in media["cast"][12:]:
+            normalized_credits.append({
+                "media_id": media["id"],
+                "people_id": people["id"],
+                "character": people["character"],
+            })
+
+            if people["id"] not in seen:
+                people_normalized = {
+                    "id": people["id"],
+                    "name": people["name"],
+                    "profile_path": people["profile_path"],
+                }
+                peoples.append(people_normalized)
+                seen.add(people["id"])
+
+    return peoples, normalized_credits

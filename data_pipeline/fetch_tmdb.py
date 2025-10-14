@@ -99,3 +99,19 @@ def fetch_series_by_genres(genres, pages_by_genre: int = 5):
             all_series.extend(series)
 
     return all_series
+
+def fetch_credits(movies_ids: list[dict[str|int]], series_ids: list[int]):
+    all_credits = []
+    params = { "api_key": API_KEY }
+
+    for movie_id in movies_ids:
+        url = f"{BASE_URL}/movie/{movie_id['id']}/credits"
+        response = requests.get(url, params=params)
+        all_credits.append(response.json())
+
+    for serie_id in series_ids:
+        url = f"{BASE_URL}/tv/{serie_id['id']}/credits"
+        response = requests.get(url, params=params)
+        all_credits.append(response.json())
+
+    return all_credits
