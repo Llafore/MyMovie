@@ -13,6 +13,7 @@ router = APIRouter(
 dao = MediaDAO()
 recommendation_engine = Engine()
 recommendation_cache: Dict[int, Dict] = {}
+medias_startup_mock = [283, 456, 497, 1396, 1416, 1429, 2190, 2316, 14424, 93405]
 
 @router.get('/media', response_model=MediaResponse)
 def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=100)):
@@ -22,7 +23,10 @@ def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=1
     try:
         media_db_response = dao.load_media_paginated(from_index, to_index)
         media_dtos = [MediaDTO(**media) for media in media_db_response]
-        return MediaResponse(media=media_dtos)
+
+        filtered_media = [m for m in media_dtos if m.id not in medias_startup_mock] 
+        return MediaResponse(media=filtered_media)
+
     except Exception as e:
         print(f"Error fetching media: {str(e)}")
         return MediaResponse(media=[])
@@ -48,7 +52,6 @@ def get_check_ratings(user: str):
 @router.get('/startup_medias', response_model=MediaResponse)
 def get_startup_medias():
     try:
-        medias_startup_mock = [283, 456, 497, 1396, 1416, 1429, 2190, 2316, 14424, 93405]
         medias_dict = dao.get_medias(medias_startup_mock)
         medias_dtos = [MediaDTO(**media) for media in medias_dict]
         return MediaResponse(media=medias_dtos)
@@ -87,12 +90,20 @@ def get_recommendations(request: RecommendationRequest):
                 "timestamp": datetime.utcnow(),
             }
 
+            
         cached_recommendation_ids = recommendation_cache[clerk_id]["recommendation_ids"]
-        total_results = len(cached_recommendation_ids)
+        if (request.from_startup):
+            filtered_ids = [mid for mid in cached_recommendation_ids if mid not in medias_startup_mock]
+            total_results = len(filtered_ids)
+            start_idx = (page_number - 1) * page_size
+            end_idx = start_idx + page_size
+            paged_ids = filtered_ids[start_idx:end_idx]
 
-        start_idx = (page_number - 1) * page_size
-        end_idx = start_idx + page_size
-        paged_ids = cached_recommendation_ids[start_idx:end_idx]
+        else:
+            total_results = len(cached_recommendation_ids)
+            start_idx = (page_number - 1) * page_size
+            end_idx = start_idx + page_size
+            paged_ids = cached_recommendation_ids[start_idx:end_idx]
 
         recommended_medias = dao.get_medias(paged_ids)
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})

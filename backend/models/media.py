@@ -32,3 +32,4 @@ class RecommendationRequest(BaseModel):
     page_number: int = Field(default=1, ge=1)
     page_size: int = Field(default=10, ge=1)
     refresh: bool = Field(default=False)
+    from_startup: bool = Field(default=False)
