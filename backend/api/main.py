@@ -6,7 +6,7 @@ app = FastAPI()
 app.include_router(user_api.router)
 app.include_router(media_api.router)
 
-@app.get("/health-check")
+@app.post("/health-check")
 async def health_check():
     return {"status": "ok"}
 
