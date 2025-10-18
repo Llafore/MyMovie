@@ -25,7 +25,7 @@ def search_genres():
 def search_movies(genres: list[dict[int | str]] = None):
     print("Fetching movies...")
     dao = MediaDAO()
-    movies = (fetch_top_rated_movies(pages=1) + fetch_popular_movies(pages=1) + fetch_movies_by_genres(genres, pages_by_genre=1))
+    movies = (fetch_top_rated_movies(pages=20) + fetch_popular_movies(pages=20) + fetch_movies_by_genres(genres, pages_by_genre=20))
 
     normalized_movies, normalized_movies_genres = normalize_media_data(movies, is_movie=True)
 
@@ -38,7 +38,7 @@ def search_movies(genres: list[dict[int | str]] = None):
 def search_series(genres: list[dict[int | str]] = None):
     print("Fetching series...")
     dao = MediaDAO()
-    series = (fetch_top_rated_series(pages=1) + fetch_popular_series(pages=1) + fetch_series_by_genres(genres, pages_by_genre=1))
+    series = (fetch_top_rated_series(pages=20) + fetch_popular_series(pages=20) + fetch_series_by_genres(genres, pages_by_genre=20))
 
     normalized_series, normalized_series_genres = normalize_media_data(series, is_movie=False)
 

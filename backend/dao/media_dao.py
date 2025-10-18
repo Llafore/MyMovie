@@ -83,7 +83,7 @@ class MediaDAO:
         return (
             self.supabase
             .table('media')
-            .select('*, media_genres!inner(*)')
+            .select('*, media_genres!inner(*), media_credits!inner(*)')
             .execute()
             .data
         )

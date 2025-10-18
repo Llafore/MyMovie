@@ -18,7 +18,8 @@ def normalize_media_data(medias: list[dict], is_movie: bool):
             "poster_path": media.get("poster_path"),
             "backdrop_path": media.get("backdrop_path"),
         }
-        if m["release_date"] == '': m["release_date"] = None
+        if m["release_date"] or m["description"] == '':
+            continue
 
         normalized_media.append(m)
         media_genres = normalize_media_genres(media)
@@ -54,20 +55,20 @@ def normalize_credits(credits: list[dict]):
     normalized_credits = []
 
     for media in credits:
-        for people in media["cast"][12:]:
-            normalized_credits.append({
-                "media_id": media["id"],
-                "people_id": people["id"],
-                "character": people["character"],
-            })
+        for role_type in ("cast", "crew"):
+            for person in media.get(role_type, [])[8:]:
+                normalized_credits.append({
+                    "media_id": media["id"],
+                    "people_id": person["id"],
+                    "character": person.get("character", person.get("department", "")),
+                })
 
-            if people["id"] not in seen:
-                people_normalized = {
-                    "id": people["id"],
-                    "name": people["name"],
-                    "profile_path": people["profile_path"],
-                }
-                peoples.append(people_normalized)
-                seen.add(people["id"])
+                if person["id"] not in seen:
+                    peoples.append({
+                        "id": person["id"],
+                        "name": person["name"],
+                        "profile_path": person.get("profile_path"),
+                    })
+                    seen.add(person["id"])
 
     return peoples, normalized_credits
