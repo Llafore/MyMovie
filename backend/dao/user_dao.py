@@ -27,7 +27,6 @@ class UserDAO:
         return User(clerk_id=data[0]['clerk_id'],
                     name=data[0]['name'],
                     email=data[0]['email'],
-                    password=data[0]['password']
                     )
 
     def find_by_id(self, id: str):
@@ -44,7 +43,6 @@ class UserDAO:
         return User(clerk_id=data[0]['clerk_id'],
                     name=data[0]['name'],
                     email=data[0]['email'],
-                    password=data[0]['password']
                     )
 
     def create_user(self, user: User):
@@ -54,7 +52,9 @@ class UserDAO:
             'clerk_id': user.clerk_id,
             'email': user.email,
             'name': user.name,
-            'password': user.password,
         }
         self.supabase.table('user').insert(user_dict).execute()
         return True
+
+    def delete_user(self, clerk_id: str):
+        self.supabase.table('user').delete().eq('clerk_id', clerk_id).execute()

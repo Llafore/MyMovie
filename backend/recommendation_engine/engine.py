@@ -26,36 +26,41 @@ class Engine:
 
         data = dao.load_media_to_df_content()
         MediaUtil.normalize_media_genres(data)
+        MediaUtil.normalize_media_credits(data)
         df = pd.DataFrame(data)
         self.id2meta = (df.set_index('id')[
             ['title','description','release_date','poster_path','backdrop_path']]
                         .to_dict(orient='index'))
 
         tfidf_genres = vec.fit_transform(df['media_genres_normalized']) * 3
+        tfidf_credits = vec.fit_transform(df['media_credits_normalized']) * 5
         tfidf_desc = vec.fit_transform(df['description']) * 0.5
         tfdf_release_date = vec.fit_transform(df['release_date']) * 2
 
-        combined = hstack([tfidf_genres, tfidf_desc, tfdf_release_date])
+        combined = hstack([tfidf_genres, tfidf_credits, tfidf_desc, tfdf_release_date])
 
         sim = cosine_similarity(combined)
 
         sim_df = pd.DataFrame(sim, index=df['id'], columns=df['id'])
 
         return sim_df
+    def recommend_media(
+        self,
+        user_history_scores: dict[int, int]
+    ) -> pd.Series:
+        media_similarity_scores = pd.Series(0.0, index=self.ctt_sim_df.index, dtype=float)
 
-    def recommend_media(self, past_recommendations: dict[int, int], top_n=10):
-        score_ctt = pd.Series(0.0, index=self.ctt_sim_df.index, dtype=float)
+        for media_id, user_score in user_history_scores.items():
+            if media_id in self.ctt_sim_df.columns:
+                media_similarity_scores += user_score * self.ctt_sim_df[media_id]
 
-        for media, score in past_recommendations.items():
-            if media in self.ctt_sim_df.columns:
-                score_ctt += score * self.ctt_sim_df[media]
+        for media_id in user_history_scores:
+            media_similarity_scores = media_similarity_scores.drop(media_id, errors='ignore') 
 
-        for past_recommendation in past_recommendations:
-            if past_recommendation in score_ctt.index:
-                score_ctt.drop(past_recommendation, inplace=True)
+        sorted_scores = media_similarity_scores.sort_values(ascending=False)
 
-        recommendations = score_ctt.sort_values(ascending=False).head(top_n)
-        return recommendations
+        return sorted_scores
+
 
 
 if __name__ == '__main__':

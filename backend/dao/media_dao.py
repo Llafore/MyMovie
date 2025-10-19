@@ -83,7 +83,7 @@ class MediaDAO:
         return (
             self.supabase
             .table('media')
-            .select('*, media_genres!inner(*)')
+            .select('*, media_genres!inner(*), media_credits!inner(*)')
             .execute()
             .data
         )
@@ -114,6 +114,22 @@ class MediaDAO:
                 .table('rating')
                 .select('media_id, score')
                 .eq('clerk_id', clerk_id)
+                .execute()
+                .data)
+
+    def load_series_ids(self) -> list[int]:
+        return (self.supabase
+                .table('media')
+                .select('id')
+                .eq('is_movie', False)
+                .execute()
+                .data)
+
+    def load_movies_ids(self) -> list[int]:
+        return (self.supabase
+                .table('media')
+                .select('id')
+                .eq('is_movie', True)
                 .execute()
                 .data)
 
