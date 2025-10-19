@@ -55,11 +55,12 @@ class Engine:
                 media_similarity_scores += user_score * self.ctt_sim_df[media_id]
 
         for media_id in user_history_scores:
-            media_similarity_scores.pop(media_id)
+            media_similarity_scores = media_similarity_scores.drop(media_id, errors='ignore') 
 
         sorted_scores = media_similarity_scores.sort_values(ascending=False)
 
         return sorted_scores
+
 
 
 if __name__ == '__main__':
