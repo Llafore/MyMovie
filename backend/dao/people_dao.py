@@ -7,6 +7,12 @@ class PeopleDAO:
         key : str = os.getenv("SUPABASE_KEY")
         self.supabase: Client = create_client(url, key)
 
+    def clear_people(self):
+        self.supabase.table('people').delete().neq("id", 0).execute()
+
+    def clear_credits(self):
+        self.supabase.table('media_credits').delete().neq("id", 0).execute()
+
     def insert_people(self, peoples: list[dict]):
         self.supabase.table('people').upsert(peoples).execute()
 

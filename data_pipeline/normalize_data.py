@@ -18,7 +18,7 @@ def normalize_media_data(medias: list[dict], is_movie: bool):
             "poster_path": media.get("poster_path"),
             "backdrop_path": media.get("backdrop_path"),
         }
-        if m["release_date"] or m["description"] == '':
+        if m["release_date"] == '' or m["description"] == '':
             continue
 
         normalized_media.append(m)
@@ -55,20 +55,46 @@ def normalize_credits(credits: list[dict]):
     normalized_credits = []
 
     for media in credits:
-        for role_type in ("cast", "crew"):
-            for person in media.get(role_type, [])[8:]:
-                normalized_credits.append({
-                    "media_id": media["id"],
-                    "people_id": person["id"],
-                    "character": person.get("character", person.get("department", "")),
-                })
+        cast_with_character = [
+            person for person in media.get("cast", [])
+            if "character" in person and person["character"]
+        ][:15]
 
-                if person["id"] not in seen:
-                    peoples.append({
-                        "id": person["id"],
-                        "name": person["name"],
-                        "profile_path": person.get("profile_path"),
-                    })
-                    seen.add(person["id"])
+        for person in cast_with_character:
+            normalized_credits.append({
+                "media_id": media["id"],
+                "people_id": person["id"],
+                "character": person["character"],
+                "role": "actor",
+                "name": person["name"]
+            })
+            if person["id"] not in seen:
+                peoples.append({
+                    "id": person["id"],
+                    "name": person["name"],
+                    "profile_path": person.get("profile_path"),
+                })
+                seen.add(person["id"])
+
+        crew_filtered = [
+            person for person in media.get("crew", [])
+            if person.get("job") in ("Executive Producer", "Director")
+        ]
+
+        for person in crew_filtered:
+            normalized_credits.append({
+                "media_id": media["id"],
+                "people_id": person["id"],
+                "character": None,
+                "role": person["job"],
+                "name": person["name"]
+            })
+            if person["id"] not in seen:
+                peoples.append({
+                    "id": person["id"],
+                    "name": person["name"],
+                    "profile_path": person.get("profile_path"),
+                })
+                seen.add(person["id"])
 
     return peoples, normalized_credits

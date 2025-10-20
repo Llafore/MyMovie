@@ -88,8 +88,14 @@ class MediaDAO:
             .data
         )
 
+    def clear_media(self):
+        self.supabase.table('media').delete().neq("id", 0).execute()
+
     def insert_media(self, medias: list[dict]):
         self.supabase.table('media').upsert(medias).execute()
+
+    def clear_media_genres(self):
+        self.supabase.table('media_genres').delete().neq("id", 0).execute()
 
     def insert_media_genres(self, medias_genres: list[dict]):
         self.supabase.table('media_genres').upsert(medias_genres).execute()

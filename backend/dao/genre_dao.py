@@ -11,6 +11,9 @@ class GenreDAO:
         key : str = os.getenv("SUPABASE_KEY")
         self.supabase: Client = create_client(url, key)
 
+    def clear_genres(self):
+        self.supabase.table('genre').delete().neq("id", 0).execute()
+
     def insert_genres(self, genres: list[dict]):
         self.supabase.table('genre').upsert(genres).execute()
 
