@@ -6,7 +6,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 
 from fetch_tmdb import (fetch_popular_movies, fetch_top_rated_movies, fetch_genres, fetch_top_rated_series, fetch_popular_series,
-                        fetch_series_by_genres, fetch_movies_by_genres, fetch_credits)
+                        fetch_series_by_genres, fetch_movies_by_genres, fetch_movie_credits, fetch_tv_credits)
 from normalize_data import normalize_media_data, normalize_genres, normalize_credits
 from backend.dao.media_dao import MediaDAO
 from backend.dao.genre_dao import GenreDAO
@@ -64,10 +64,13 @@ def search_credits():
     people_dao = PeopleDAO()
 
     movies_ids = media_dao.load_movies_ids()
+    movie_credits = fetch_movie_credits(movies_ids)
+
     series_ids = media_dao.load_series_ids()
-    credits = fetch_credits(movies_ids, series_ids)
+    tv_credits = fetch_tv_credits(series_ids)
+
     ts = perf_counter()
-    peoples, credits = normalize_credits(credits)
+    peoples, credits = normalize_credits(movie_credits, tv_credits)
     te = perf_counter()
     print("time normalizing credits:", te-ts)
 

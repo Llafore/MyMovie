@@ -13,7 +13,6 @@ class MediaUtil:
 
     @staticmethod
     def normalize_media_credits(medias: list[dict]):
-
         for media in medias:
             media.update({'media_credits_normalized': ''})
             for media_credit in media['media_credits']:

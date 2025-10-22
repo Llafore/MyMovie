@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
+from utils.media_util import MediaUtil
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
 from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
@@ -13,7 +14,7 @@ router = APIRouter(
 dao = MediaDAO()
 recommendation_engine = Engine()
 recommendation_cache: Dict[int, Dict] = {}
-medias_startup_mock = [283, 456, 497, 1396, 1416, 1429, 2190, 2316, 14424, 93405]
+medias_startup_mock = ["f238", "s456", "f497", "s1396", "s1416", "s1429", "s2190", "s2316", "s14424", "s93405"]
 
 @router.get('/media', response_model=MediaResponse)
 def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=100)):
@@ -106,6 +107,20 @@ def get_recommendations(request: RecommendationRequest):
             paged_ids = cached_recommendation_ids[start_idx:end_idx]
 
         recommended_medias = dao.get_medias(paged_ids)
+        credits = dao.get_credits_from_medias(paged_ids)
+        # print(credits)
+
+        for media in recommended_medias:
+            media['cast'] = [
+                {
+                    'role': credit['role'],
+                    'name': credit['name'],
+                    'character_name': credit['character']
+                }
+                for credit in credits
+                if credit['media_id'] == media['id']
+            ]
+
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
         
         media_by_id = {media["id"]: media for media in recommended_medias}

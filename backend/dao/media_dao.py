@@ -13,7 +13,7 @@ load_dotenv()
 class MediaGenreLink(SQLModel, table=True):
     __tablename__ = "media_genres"
     id: Optional[int] = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id")
+    media_id: str = Field(foreign_key="media.id")
     genre_id: int = Field(foreign_key="genre.id")
 
 
@@ -27,7 +27,7 @@ class Genre(SQLModel, table=True):
 
 class Media(SQLModel, table=True):
     __tablename__ = "media"
-    id: int = Field(primary_key=True)
+    id: str = Field(primary_key=True)
     title: Optional[str]
     description: Optional[str]
     release_date: Optional[date]
@@ -79,17 +79,49 @@ class MediaDAO:
             .data
         )   
 
-    def load_media_to_df_content(self):
-        return (
-            self.supabase
-            .table('media')
-            .select('*, media_genres!inner(*), media_credits!inner(*)')
-            .execute()
-            .data
-        )
+    def load_media_to_df_content(self, batch_size=1000):
+        all_medias = []
+        start = 0
+
+        while True:
+            resp = (
+                self.supabase
+                .table('media')
+                .select('*')
+                .range(start, start + batch_size - 1)
+                .execute()
+            )
+            data = resp.data or []
+            all_medias.extend(data)
+
+            print(f"Fetched {len(data)} media (total {len(all_medias)})")
+
+            if len(data) < batch_size:
+                break
+
+            start += batch_size
+
+        genres = self.supabase.table('media_genres').select('*').execute().data or []
+        credits = self.supabase.table('media_credits').select('*').execute().data or []
+
+        from collections import defaultdict
+        genres_by_media = defaultdict(list)
+        for g in genres:
+            genres_by_media[g['media_id']].append(g)
+
+        credits_by_media = defaultdict(list)
+        for c in credits:
+            credits_by_media[c['media_id']].append(c)
+
+        for m in all_medias:
+            m['media_genres'] = genres_by_media[m['id']]
+            m['media_credits'] = credits_by_media[m['id']]
+
+        print(f"✅ Finished merging {len(all_medias)} media")
+        return all_medias
 
     def clear_media(self):
-        self.supabase.table('media').delete().neq("id", 0).execute()
+        self.supabase.table('media').delete().neq("id", "0").execute()
 
     def insert_media(self, medias: list[dict]):
         self.supabase.table('media').upsert(medias).execute()
@@ -107,7 +139,7 @@ class MediaDAO:
         ]
         self.supabase.table("rating").insert(data).execute()
 
-    def get_medias(self, medias_ids: list[int]):
+    def get_medias(self, medias_ids: list[str]):
         return (self.supabase
                 .table('media')
                 .select('*')
@@ -123,7 +155,15 @@ class MediaDAO:
                 .execute()
                 .data)
 
-    def load_series_ids(self) -> list[int]:
+    def get_credits_from_medias(self, medias_ids: list[str]):
+        return (self.supabase
+                .table('media_credits')
+                .select('*')
+                .in_('media_id', medias_ids)
+                .execute()
+                .data)
+
+    def load_series_ids(self) -> list[str]:
         return (self.supabase
                 .table('media')
                 .select('id')
@@ -131,7 +171,7 @@ class MediaDAO:
                 .execute()
                 .data)
 
-    def load_movies_ids(self) -> list[int]:
+    def load_movies_ids(self) -> list[str]:
         return (self.supabase
                 .table('media')
                 .select('id')
