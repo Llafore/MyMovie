@@ -6,14 +6,24 @@ from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
 from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
 
+import tracemalloc
+
 router = APIRouter(
     prefix='/media',
     tags=['Media'],
 )
 
 dao = MediaDAO()
+
+tracemalloc.start()
 recommendation_engine = Engine()
-recommendation_cache: Dict[int, Dict] = {}
+current, peak = tracemalloc.get_traced_memory()
+print(f"Current memory usage: {current / 1024**2:.2f} MB")
+print(f"Peak memory usage: {peak / 1024**2:.2f} MB")
+
+tracemalloc.stop()
+
+recommendation_cache: Dict[str, Dict] = {}
 medias_startup_mock = ["f238", "s456", "f497", "s1396", "s1416", "s1429", "s2190", "s2316", "s14424", "s93405"]
 
 @router.get('/media', response_model=MediaResponse)
