@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 from scipy.sparse import hstack
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -28,6 +29,8 @@ class Engine:
         MediaUtil.normalize_media_genres(data)
         MediaUtil.normalize_media_credits(data)
         df = pd.DataFrame(data)
+        # print(df.head()['media_credits_normalized'])
+
         self.id2meta = (df.set_index('id')[
             ['title','description','release_date','poster_path','backdrop_path']]
                         .to_dict(orient='index'))
@@ -44,9 +47,10 @@ class Engine:
         sim_df = pd.DataFrame(sim, index=df['id'], columns=df['id'])
 
         return sim_df
+
     def recommend_media(
         self,
-        user_history_scores: dict[int, int]
+        user_history_scores: dict[str, int]
     ) -> pd.Series:
         media_similarity_scores = pd.Series(0.0, index=self.ctt_sim_df.index, dtype=float)
 
