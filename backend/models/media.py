@@ -2,8 +2,13 @@ from datetime import date
 from pydantic import BaseModel, Field
 from typing import Optional
 
+class CastDTO(BaseModel):
+    role: str
+    name: Optional[str] = None
+    character_name: Optional[str] = None
+
 class MediaDTO(BaseModel):
-    id: int
+    id: str
     title: Optional[str]
     description: Optional[str]
     release_date: Optional[date]
@@ -11,12 +16,13 @@ class MediaDTO(BaseModel):
     backdrop_path: Optional[str]
     is_movie: Optional[bool] = True
     similarity_score: Optional[float] = None
+    cast: Optional[list[CastDTO]] = None
 
 class MediaResponse(BaseModel):
     media: list[MediaDTO]
 
 class Rating(BaseModel):
-    media_id: int
+    media_id: str
     score: float
 
 class RatingBatchRequest(BaseModel):

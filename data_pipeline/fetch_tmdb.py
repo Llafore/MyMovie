@@ -116,18 +116,27 @@ def fetch_series_by_genres(genres, pages_by_genre: int = 5):
     print("time fetching series by genres:", te - ts)
     return all_series
 
-def fetch_credits(movies_ids: list[dict[str|int]], series_ids: list[int]):
+def fetch_movie_credits(movies_ids: list[dict[str|int]]):
     ts = time.perf_counter()
     all_credits = []
     params = { "api_key": API_KEY }
 
     for movie_id in movies_ids:
-        url = f"{BASE_URL}/movie/{movie_id['id']}/credits"
+        url = f"{BASE_URL}/movie/{movie_id['id'][1:]}/credits"
         response = requests.get(url, params=params)
         all_credits.append(response.json())
 
+    te = time.perf_counter()
+    print("time fetching credits:", te-ts)
+    return all_credits
+
+def fetch_tv_credits(series_ids: list[int]):
+    ts = time.perf_counter()
+    all_credits = []
+    params = { "api_key": API_KEY }
+
     for serie_id in series_ids:
-        url = f"{BASE_URL}/tv/{serie_id['id']}/credits"
+        url = f"{BASE_URL}/tv/{serie_id['id'][1:]}/credits"
         response = requests.get(url, params=params)
         all_credits.append(response.json())
 
