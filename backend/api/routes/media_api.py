@@ -14,7 +14,7 @@ router = APIRouter(
 dao = MediaDAO()
 recommendation_engine = Engine()
 recommendation_cache: Dict[int, Dict] = {}
-medias_startup_mock = [283, 456, 497, 1396, 1416, 1429, 2190, 2316, 14424, 93405]
+medias_startup_mock = ["f238", "s456", "f497", "s1396", "s1416", "s1429", "s2190", "s2316", "s14424", "s93405"]
 
 @router.get('/media', response_model=MediaResponse)
 def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=100)):
