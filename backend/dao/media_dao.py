@@ -163,6 +163,22 @@ class MediaDAO:
                 .execute()
                 .data)
 
+    def get_credits_from_medias(self, medias: list[str]):
+        return (self.supabase
+                .table('media_credits')
+                .select('*, people(profile_path)')
+                .in_('media_id', medias)
+                .execute()
+                .data)
+
+    def get_genres_from_medias(self, medias_ids: list[str]):
+        return (self.supabase
+                .table('media_genres')
+                .select('*, genre(*)')
+                .in_('media_id', medias_ids)
+                .execute()
+                .data)
+
     def load_series_ids(self) -> list[str]:
         return (self.supabase
                 .table('media')

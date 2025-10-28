@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, status, HTTPException
 from utils.media_util import MediaUtil
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
+from models.media import CastDTO, CastResponse, MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
 
 import tracemalloc
 
@@ -117,19 +117,25 @@ def get_recommendations(request: RecommendationRequest):
             paged_ids = cached_recommendation_ids[start_idx:end_idx]
 
         recommended_medias = dao.get_medias(paged_ids)
-        credits = dao.get_credits_from_medias(paged_ids)
-        # print(credits)
 
+        genres = dao.get_genres_from_medias(paged_ids)
         for media in recommended_medias:
-            media['cast'] = [
-                {
-                    'role': credit['role'],
-                    'name': credit['name'],
-                    'character_name': credit['character']
-                }
-                for credit in credits
-                if credit['media_id'] == media['id']
+            media['genres'] = [ 
+                genre['genre']['name'] for genre in genres
+                if genre['media_id'] == media['id']
             ]
+
+        credits = dao.get_credits_from_medias(paged_ids)
+        for media in recommended_medias:
+            media['cast'] = [ 
+            CastDTO(
+                role=credit['role'],
+                name=credit['name'],
+                character_name=credit['character'],
+                profile_path=credit['people']['profile_path']
+            )
+            for credit in credits
+        ]
 
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
         
@@ -152,20 +158,3 @@ def get_recommendations(request: RecommendationRequest):
     except Exception as e:
         print(f"Error fetching recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail="Error fetching recommendations.")
-
-
-# @router.post('/recommendations', response_model=MediaResponse)
-# def get_recommendations(request: RecommendationRequest):
-#     try:
-#         user_ratings = dao.get_ratings_by_clerk_id(request.clerk_id)
-#         if not user_ratings:
-#             raise HTTPException(status_code=404, detail="User reviews not found")
-#         user_ratings_to_engine = {rating['media_id']: rating['score'] for rating in user_ratings}
-#         recommendations_series = recommendation_engine.recommend_media(past_recommendations=user_ratings_to_engine, top_n=request.limit)
-#         recommendations_ids = recommendations_series.index.tolist()
-#         recommendations_medias = dao.get_medias(recommendations_ids)
-#         media_dtos = [MediaDTO(**media) for media in recommendations_medias]
-#         return MediaResponse(media=media_dtos)
-#     except Exception as e:
-#         print(f"Error fetching recommendations: {str(e)}")
-#         raise HTTPException(status_code=500, detail=f"Error fetching recommendations: {str(e)}")
