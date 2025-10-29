@@ -134,7 +134,7 @@ def get_recommendations(request: RecommendationRequest):
                 character_name=credit['character'],
                 profile_path=credit['people']['profile_path']
             )
-            for credit in credits
+            for credit in credits if credit['media_id'] == media['id']
         ]
 
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
