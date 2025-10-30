@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
-from utils.media_util import MediaUtil
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
+from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest, \
+    SearchQuery
 
 import tracemalloc
 
@@ -153,19 +153,12 @@ def get_recommendations(request: RecommendationRequest):
         print(f"Error fetching recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail="Error fetching recommendations.")
 
-
-# @router.post('/recommendations', response_model=MediaResponse)
-# def get_recommendations(request: RecommendationRequest):
-#     try:
-#         user_ratings = dao.get_ratings_by_clerk_id(request.clerk_id)
-#         if not user_ratings:
-#             raise HTTPException(status_code=404, detail="User reviews not found")
-#         user_ratings_to_engine = {rating['media_id']: rating['score'] for rating in user_ratings}
-#         recommendations_series = recommendation_engine.recommend_media(past_recommendations=user_ratings_to_engine, top_n=request.limit)
-#         recommendations_ids = recommendations_series.index.tolist()
-#         recommendations_medias = dao.get_medias(recommendations_ids)
-#         media_dtos = [MediaDTO(**media) for media in recommendations_medias]
-#         return MediaResponse(media=media_dtos)
-#     except Exception as e:
-#         print(f"Error fetching recommendations: {str(e)}")
-#         raise HTTPException(status_code=500, detail=f"Error fetching recommendations: {str(e)}")
+@router.post('/search', response_model=MediaResponse)
+def get_media_by_query(search: SearchQuery):
+    try:
+        medias_list = dao.load_by_query(search)
+        medias_dtos = [MediaDTO(**media.model_dump()) for media in medias_list]
+        return MediaResponse(media=medias_dtos)
+    except Exception as e:
+        print(f"Error fetching search: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error fetching query.")

@@ -1,6 +1,7 @@
 from datetime import date
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal, Any
+
 
 class CastDTO(BaseModel):
     role: str
@@ -39,3 +40,15 @@ class RecommendationRequest(BaseModel):
     page_size: int = Field(default=10, ge=1)
     refresh: bool = Field(default=False)
     from_startup: bool = Field(default=False)
+
+class FilterCondition(BaseModel):
+    field: Literal["title", "release_date", "is_movie", "genre.name", "people.name", "people.character"]
+    operator: Literal["eq", "gt", "gte", "lt", "lte", "neq", "like", "in"]
+    value: Any
+
+class SearchQuery(BaseModel):
+    filters: Optional[list[FilterCondition]] = None
+    sort_by: Optional[str] = None
+    sort_order: Optional[Literal["asc", "desc"]] = "asc"
+    limit: Optional[int] = 20
+    offset: Optional[int] = 0
