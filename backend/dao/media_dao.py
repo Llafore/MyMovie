@@ -243,7 +243,7 @@ class MediaDAO:
             {"clerk_id": clerk_id, "media_id": r.media_id, "score": r.score}
             for r in ratings
         ]
-        self.supabase.table("rating").insert(data).execute()
+        self.supabase.table("rating").upsert(data, on_conflict="clerk_id, media_id").execute()
 
     def get_medias(self, medias_ids: list[str]):
         return (self.supabase
