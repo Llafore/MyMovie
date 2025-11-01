@@ -3,7 +3,7 @@ import os
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, or_
 from supabase import create_client, Client
 from sqlmodel import Field, Relationship, SQLModel, create_engine, Session, select
 from sqlalchemy.orm import selectinload
@@ -81,7 +81,17 @@ class MediaDAO:
 
         for f in filters:
             col = None
-            # Campos relacionais
+
+            if f.field == "generic":
+                pattern = f"%{f.value}%"
+                or_block = [
+                    Media.title.ilike(pattern),
+                    People.name.ilike(pattern),
+                    MediaCreditLink.character.ilike(pattern)
+                ]
+                conditions.append(or_(*or_block))
+                continue
+
             if f.field == "genre.name":
                 col = Genre.name
             elif f.field == "people.name":
@@ -142,9 +152,9 @@ class MediaDAO:
                 if any(f.field.startswith("genre.") for f in query.filters):
                     statement = statement.join(MediaGenreLink).join(Genre)
 
-                if any(f.field.startswith("people.") for f in query.filters):
+                if any(f.field.startswith("people.") or f.field == "generic" for f in query.filters):
                     statement = statement.join(MediaCreditLink)
-                    if any(f.field == "people.name" for f in query.filters):
+                    if any(f.field == "people.name" or f.field == "generic" for f in query.filters):
                         statement = statement.join(People)
 
                 # 🔹 WHERE
