@@ -3,8 +3,8 @@ from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest, \
-    SearchQuery
+from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
+    RecommendationRequest, SearchQuery
 
 import tracemalloc
 
@@ -117,19 +117,25 @@ def get_recommendations(request: RecommendationRequest):
             paged_ids = cached_recommendation_ids[start_idx:end_idx]
 
         recommended_medias = dao.get_medias(paged_ids)
-        credits = dao.get_credits_from_medias(paged_ids)
-        # print(credits)
 
+        genres = dao.get_genres_from_medias(paged_ids)
         for media in recommended_medias:
-            media['cast'] = [
-                {
-                    'role': credit['role'],
-                    'name': credit['name'],
-                    'character_name': credit['character']
-                }
-                for credit in credits
-                if credit['media_id'] == media['id']
+            media['genres'] = [ 
+                genre['genre']['name'] for genre in genres
+                if genre['media_id'] == media['id']
             ]
+
+        credits = dao.get_credits_from_medias(paged_ids)
+        for media in recommended_medias:
+            media['cast'] = [ 
+            CastDTO(
+                role=credit['role'],
+                name=credit['name'],
+                character_name=credit['character'],
+                profile_path=credit['people']['profile_path']
+            )
+            for credit in credits if credit['media_id'] == media['id']
+        ]
 
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
         

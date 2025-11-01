@@ -7,6 +7,7 @@ class CastDTO(BaseModel):
     role: str
     name: Optional[str] = None
     character_name: Optional[str] = None
+    profile_path: Optional[str] = None
 
 class MediaDTO(BaseModel):
     id: str
@@ -17,6 +18,7 @@ class MediaDTO(BaseModel):
     backdrop_path: Optional[str]
     is_movie: Optional[bool] = True
     similarity_score: Optional[float] = None
+    genres: Optional[list[str]] = None
     cast: Optional[list[CastDTO]] = None
 
 class MediaResponse(BaseModel):
