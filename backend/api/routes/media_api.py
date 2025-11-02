@@ -2,10 +2,10 @@ from datetime import datetime
 from time import perf_counter
 from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
-from utils.media_util import MediaUtil
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import CastDTO, MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, RecommendationRequest
+from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
+    RecommendationRequest, SearchQuery
 
 import tracemalloc
 
@@ -190,3 +190,13 @@ def get_recommendations(request: RecommendationRequest):
     except Exception as e:
         print(f"Error fetching recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail="Error fetching recommendations.")
+
+@router.post('/search', response_model=MediaResponse)
+def get_media_by_query(search: SearchQuery):
+    try:
+        medias_list = dao.load_by_query(search)
+        medias_dtos = [MediaDTO(**media.model_dump()) for media in medias_list]
+        return MediaResponse(media=medias_dtos)
+    except Exception as e:
+        print(f"Error fetching search: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error fetching query.")

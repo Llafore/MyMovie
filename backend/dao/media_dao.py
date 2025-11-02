@@ -3,11 +3,14 @@ import os
 from typing import List, Optional
 
 from dotenv import load_dotenv
+from sqlalchemy.sql.expression import and_
 from supabase import create_client, Client
 from sqlmodel import Field, Relationship, SQLModel, create_engine, Session, select
 from sqlalchemy.orm import selectinload
 
 import time
+
+from models.media import SearchQuery
 
 load_dotenv()
 class MediaGenreLink(SQLModel, table=True):
@@ -24,6 +27,24 @@ class Genre(SQLModel, table=True):
 
     media: List["Media"] = Relationship(back_populates="genres", link_model=MediaGenreLink)
 
+class MediaCreditLink(SQLModel, table=True):
+    __tablename__ = "media_credits"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    media_id: int = Field(foreign_key="media.id")
+    people_id: int = Field(foreign_key="people.id")
+    character: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
+
+
+class People(SQLModel, table=True):
+    __tablename__ = "people"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: Optional[str] = None
+    profile_path: Optional[str] = None
+
+    media: List["Media"] = Relationship(back_populates="people", link_model=MediaCreditLink)
+
 
 class Media(SQLModel, table=True):
     __tablename__ = "media"
@@ -36,7 +57,8 @@ class Media(SQLModel, table=True):
     is_movie: Optional[bool] = True
 
     genres: List[Genre] = Relationship(back_populates="media", link_model=MediaGenreLink)
-    
+    people: List[People] = Relationship(back_populates="media", link_model=MediaCreditLink)
+
 class MediaDAO:
     def __init__(self):
 
@@ -54,6 +76,51 @@ class MediaDAO:
         key : str = os.getenv("SUPABASE_KEY")
         self.supabase: Client = create_client(url, key)
 
+    def build_where(self, filters):
+        conditions = []
+
+        for f in filters:
+            col = None
+            # Campos relacionais
+            if f.field == "genre.name":
+                col = Genre.name
+            elif f.field == "people.name":
+                col = People.name
+            elif f.field == "people.character":
+                col = MediaCreditLink.character
+            # Campos diretos
+            elif '.' not in f.field:
+                try:
+                    col = getattr(Media, f.field)
+                except AttributeError:
+                    continue
+            else:
+                continue
+
+            if col is None:
+                continue
+
+            op = f.operator
+            match op:
+                case "eq":
+                    conditions.append(col == f.value)
+                case "neq":
+                    conditions.append(col != f.value)
+                case "gt":
+                    conditions.append(col > f.value)
+                case "gte":
+                    conditions.append(col >= f.value)
+                case "lt":
+                    conditions.append(col < f.value)
+                case "lte":
+                    conditions.append(col <= f.value)
+                case "like":
+                    conditions.append(col.ilike(f"%{f.value}%"))
+                case "in":
+                    conditions.append(col.in_(f.value))
+
+        return and_(*conditions) if conditions else None
+
     def load_media_with_genres(self) -> List[Media]:
         with Session(self.engine) as session:
             statement = select(Media).options(selectinload(Media.genres))
@@ -65,6 +132,45 @@ class MediaDAO:
             statement = select(Media)
             media_list = session.exec(statement).all()
             return media_list
+
+    def load_by_query(self, query: SearchQuery):
+        with Session(self.engine) as session:
+            statement = select(Media)
+
+            # 🔹 JOINs opcionais (dependendo dos filtros)
+            if query.filters:
+                if any(f.field.startswith("genre.") for f in query.filters):
+                    statement = statement.join(MediaGenreLink).join(Genre)
+
+                if any(f.field.startswith("people.") for f in query.filters):
+                    statement = statement.join(MediaCreditLink)
+                    if any(f.field == "people.name" for f in query.filters):
+                        statement = statement.join(People)
+
+                # 🔹 WHERE
+                condition = self.build_where(query.filters)
+                if condition is not None:
+                    statement = statement.where(condition)
+
+            # 🔹 <== INSIRA AQUI o bloco de ordenação e paginação
+            if query.sort_by:
+                sort_col = getattr(Media, query.sort_by, None)
+                if sort_col is not None:
+                    if query.sort_order == "desc":
+                        statement = statement.order_by(sort_col.desc())
+                    else:
+                        statement = statement.order_by(sort_col.asc())
+
+            if query.limit:
+                statement = statement.limit(query.limit)
+
+            if query.offset:
+                statement = statement.offset(query.offset)
+
+            # 🔹 DISTINCT e execução
+            statement = statement.distinct()
+            results = session.exec(statement).all()
+            return results
 
     def load_all_media(self) -> list[dict]:
         return self.supabase.table('media').select('*').execute().data
