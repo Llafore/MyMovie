@@ -4,7 +4,7 @@ from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
+from models.media import CastDTO, MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
     RecommendationRequest, SearchQuery
 
 import tracemalloc
@@ -156,13 +156,13 @@ def get_recommendations(request: RecommendationRequest):
         credits = dao.get_credits_from_medias(paged_ids)
         for media in recommended_medias:
             media['cast'] = [ 
-            # CastDTO(
-            #     role=credit['role'],
-            #     name=credit['name'],
-            #     character_name=credit['character'],
-            #     profile_path=credit['people']['profile_path']
-            # )
-            # for credit in credits if credit['media_id'] == media['id']
+            CastDTO(
+                role=credit['role'],
+                name=credit['name'],
+                character_name=credit['character'],
+                profile_path=credit['people']['profile_path']
+            )
+            for credit in credits if credit['media_id'] == media['id']
         ]
         te = perf_counter()
         print(f"Time to fetch credits for recommended medias: {te - ts:0.4f} seconds")

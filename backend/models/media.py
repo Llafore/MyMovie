@@ -23,8 +23,8 @@ class MediaDTO(BaseModel):
 
 class MediaResponse(BaseModel):
     media: list[MediaDTO]
-    cursor: int
-    has_more: bool
+    cursor: Optional[int] = None
+    has_more: Optional[bool] = None
 
 class Rating(BaseModel):
     media_id: str
