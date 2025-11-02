@@ -4,9 +4,11 @@ from fastapi import APIRouter, Query, status, HTTPException
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
 from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
-    RecommendationRequest, SearchQuery
+    RecommendationRequest, SearchQuery, CastDTO
 
 import tracemalloc
+
+from utils.media_util import MediaUtil
 
 router = APIRouter(
     prefix='/media',
@@ -163,8 +165,9 @@ def get_recommendations(request: RecommendationRequest):
 def get_media_by_query(search: SearchQuery):
     try:
         medias_list = dao.load_by_query(search)
-        medias_dtos = [MediaDTO(**media.model_dump()) for media in medias_list]
-        return MediaResponse(media=medias_dtos)
+        media_dtos = MediaUtil.sql_to_dto(medias_list)
+
+        return MediaResponse(media=media_dtos)
     except Exception as e:
         print(f"Error fetching search: {str(e)}")
         raise HTTPException(status_code=500, detail="Error fetching query.")

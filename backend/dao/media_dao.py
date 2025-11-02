@@ -27,15 +27,6 @@ class Genre(SQLModel, table=True):
 
     media: List["Media"] = Relationship(back_populates="genres", link_model=MediaGenreLink)
 
-class MediaCreditLink(SQLModel, table=True):
-    __tablename__ = "media_credits"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id")
-    people_id: int = Field(foreign_key="people.id")
-    character: Optional[str] = None
-    name: Optional[str] = None
-    role: Optional[str] = None
-
 
 class People(SQLModel, table=True):
     __tablename__ = "people"
@@ -43,7 +34,18 @@ class People(SQLModel, table=True):
     name: Optional[str] = None
     profile_path: Optional[str] = None
 
-    media: List["Media"] = Relationship(back_populates="people", link_model=MediaCreditLink)
+
+class MediaCreditLink(SQLModel, table=True):
+    __tablename__ = "media_credits"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    media_id: str = Field(foreign_key="media.id")
+    people_id: int = Field(foreign_key="people.id")
+    character: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
+
+    person: People = Relationship()
+    media: "Media" = Relationship(back_populates="credits")
 
 
 class Media(SQLModel, table=True):
@@ -57,7 +59,7 @@ class Media(SQLModel, table=True):
     is_movie: Optional[bool] = True
 
     genres: List[Genre] = Relationship(back_populates="media", link_model=MediaGenreLink)
-    people: List[People] = Relationship(back_populates="media", link_model=MediaCreditLink)
+    credits: List[MediaCreditLink] = Relationship(back_populates="media")
 
 class MediaDAO:
     def __init__(self):
@@ -145,7 +147,10 @@ class MediaDAO:
 
     def load_by_query(self, query: SearchQuery):
         with Session(self.engine) as session:
-            statement = select(Media)
+            statement = select(Media).options(
+                selectinload(Media.genres),
+                selectinload(Media.credits).selectinload(MediaCreditLink.person)
+            )
 
             # 🔹 JOINs opcionais (dependendo dos filtros)
             if query.filters:
@@ -153,9 +158,7 @@ class MediaDAO:
                     statement = statement.join(MediaGenreLink).join(Genre)
 
                 if any(f.field.startswith("people.") or f.field == "generic" for f in query.filters):
-                    statement = statement.join(MediaCreditLink)
-                    if any(f.field == "people.name" or f.field == "generic" for f in query.filters):
-                        statement = statement.join(People)
+                    statement = statement.join(MediaCreditLink).join(People)
 
                 # 🔹 WHERE
                 condition = self.build_where(query.filters)
