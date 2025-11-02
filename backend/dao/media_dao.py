@@ -150,7 +150,7 @@ class MediaDAO:
     def get_ratings_by_clerk_id(self, clerk_id):
         return (self.supabase
                 .table('rating')
-                .select('media_id, score')
+                .select('*')
                 .eq('clerk_id', clerk_id)
                 .execute()
                 .data)
