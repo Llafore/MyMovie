@@ -54,3 +54,20 @@ class SearchQuery(BaseModel):
     sort_order: Optional[Literal["asc", "desc"]] = "asc"
     limit: Optional[int] = 20
     offset: Optional[int] = 0
+
+class WatchLaterDeleteBatchRequest(BaseModel):
+    clerk_id: str
+    media_id: str
+
+class WatchLaterBatchRequest(BaseModel):
+    clerk_id: Optional[str] = None
+    medias_id: list[str]
+
+class WatchLaterBatchResponse(BaseModel):
+    clerk_id: Optional[str] = None
+    medias_id: list[str]
+
+class WatchLaterRequest(BaseModel):
+    clerk_id: str
+    page_number: int = Field(default=1, ge=1)
+    page_size: int = Field(default=10, ge=1)
