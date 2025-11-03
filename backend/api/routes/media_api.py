@@ -38,6 +38,8 @@ def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=1
         media_db_response = dao.load_media_paginated(from_index, to_index)
         media_dtos = [MediaDTO(**media) for media in media_db_response]
 
+        media_dtos = MediaUtil.get_data_from_medias(media_dtos, dao)
+
         filtered_media = [m for m in media_dtos if m.id not in medias_startup_mock] 
         return MediaResponse(media=filtered_media)
 
@@ -68,6 +70,9 @@ def get_startup_medias():
     try:
         medias_dict = dao.get_medias(medias_startup_mock)
         medias_dtos = [MediaDTO(**media) for media in medias_dict]
+
+        medias_dtos = MediaUtil.get_data_from_medias(medias_dtos, dao)
+
         return MediaResponse(media=medias_dtos)
     except Exception as e:
         print(f"Error fetching startup medias: {str(e)}")
@@ -80,35 +85,21 @@ def get_recommendations(request: RecommendationRequest):
         cursor = request.cursor
         limit = request.limit
 
-        ts = perf_counter()
         user_ratings = dao.get_ratings_by_clerk_id(clerk_id)
         if not user_ratings:
             raise HTTPException(status_code=404, detail="User reviews not found")
 
-        te = perf_counter()
-        print(f"Time to fetch user ratings: {te - ts:0.4f} seconds")
-
-        ts = perf_counter()
         user_ratings_dict = {
             rating['media_id']: rating['score']
             for rating in user_ratings
         }
-        te = perf_counter()
-        print(f"Time to build user ratings dict: {te - ts:0.4} seconds")
 
-
-        ts = perf_counter()
         full_recommendation_series = recommendation_engine.recommend_media(
             user_history_scores=user_ratings_dict,
         )
-        te = perf_counter()
-        print(f"Time to generate recommendations: {te - ts:0.4f} seconds")
 
-        ts = perf_counter()
         full_recommendation_ids = full_recommendation_series.index.tolist()
         recommendation_scores = full_recommendation_series.to_dict()
-        te = perf_counter()
-        print(f"Time to process recommendation results: {te - ts:0.4f} seconds")
 
         prev_seen = set()
         if not request.refresh and clerk_id in recommendation_cache:
@@ -144,44 +135,18 @@ def get_recommendations(request: RecommendationRequest):
 
         recommended_medias = dao.get_medias(paged_ids)
 
-        ts = perf_counter()
-        genres = dao.get_genres_from_medias(paged_ids)
-        for media in recommended_medias:
-            media['genres'] = [ 
-                genre['genre']['name'] for genre in genres
-                if genre['media_id'] == media['id']
-            ]
-        te = perf_counter()
-        print(f"Time to fetch genres for recommended medias: {te - ts:0.4f} seconds")
-
-        ts = perf_counter()
-        credits = dao.get_credits_from_medias(paged_ids)
-        for media in recommended_medias:
-            media['cast'] = [ 
-            CastDTO(
-                role=credit['role'],
-                name=credit['name'],
-                character_name=credit['character'],
-                profile_path=credit['people']['profile_path']
-            )
-            for credit in credits if credit['media_id'] == media['id']
-        ]
-        te = perf_counter()
-        print(f"Time to fetch credits for recommended medias: {te - ts:0.4f} seconds")
+        recommended_medias = MediaUtil.get_data_from_medias_for_recommendation(paged_ids, recommended_medias, dao)
 
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
         
         media_by_id = {media["id"]: media for media in recommended_medias}
         
-        ts = perf_counter()
         media_dtos = []
         for media_id in paged_ids:
             if media_id in media_by_id:
                 media_dict = dict(media_by_id[media_id])
                 media_dict["similarity_score"] = float(recommendation_series.get(media_id, 0))
                 media_dtos.append(MediaDTO(**media_dict))
-        te = perf_counter()
-        print(f"Time to build MediaDTOs: {te - ts:0.4f} seconds")
 
         return MediaResponse(
             media=media_dtos,
