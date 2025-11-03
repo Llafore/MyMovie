@@ -1,4 +1,4 @@
-from dao.media_dao import Media
+from dao.media_dao import Media, MediaDAO
 from models.media import CastDTO, MediaDTO
 from utils.genre_util import GenreUtil
 
@@ -49,3 +49,53 @@ class MediaUtil:
             media_dtos.append(media_dto)
 
         return media_dtos
+
+    @staticmethod
+    def get_data_from_medias(medias: list[MediaDTO], dao: MediaDAO):
+
+        ids = [media.id for media in medias]
+
+        genres = dao.get_genres_from_medias(ids)
+        for media in medias:
+            media.genres = [ 
+                genre['genre']['name'] for genre in genres
+                if genre['media_id'] == media.id
+            ]
+
+        credits = dao.get_credits_from_medias(ids)
+        for media in medias:
+            media.cast = [ 
+            CastDTO(
+                role=credit['role'],
+                name=credit['name'],
+                character_name=credit['character'],
+                profile_path=credit['people']['profile_path']
+            )
+            for credit in credits if credit['media_id'] == media.id
+        ]
+
+        return medias
+
+    @staticmethod
+    def get_data_from_medias_for_recommendation(ids: list[str], medias: list[dict], dao: MediaDAO):
+
+        genres = dao.get_genres_from_medias(ids)
+        for media in medias:
+            media['genres'] = [ 
+                genre['genre']['name'] for genre in genres
+                if genre['media_id'] == media['id']
+            ]
+
+        credits = dao.get_credits_from_medias(ids)
+        for media in medias:
+            media['cast'] = [ 
+            CastDTO(
+                role=credit['role'],
+                name=credit['name'],
+                character_name=credit['character'],
+                profile_path=credit['people']['profile_path']
+            )
+            for credit in credits if credit['media_id'] == media['id']
+        ]
+
+        return medias
