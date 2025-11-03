@@ -261,7 +261,7 @@ class MediaDAO:
     def get_medias(self, medias_ids: list[str]):
         return (self.supabase
                 .table('media')
-                .select('*')
+                .select('*, media_credits(*), media_genres(*)')
                 .in_('id', medias_ids)
                 .execute()
                 .data)
@@ -313,6 +313,34 @@ class MediaDAO:
                 .eq('is_movie', True)
                 .execute()
                 .data)
+
+    def insert_watch_later_by_batch(self, clerk_id, medias):
+        data = [
+            {"clerk_id": clerk_id, "media_id": media}
+            for media in medias
+        ]
+        self.supabase.table('watch_later').upsert(data).execute()
+
+    def get_watch_later_by_clerk_id(self, clerk_id, page_number: 1, page_size: 10):
+        start = (page_number - 1) * page_size
+        end = page_number * page_size - 1
+        return (self.supabase
+                .table('watch_later')
+                .select('media_id')
+                .eq('clerk_id', clerk_id)
+                .order('id', desc=True)
+                .range(start, end)
+                .execute()
+                .data)
+
+    def delete_watch_later(self, clerk_id, media_id):
+        (self.supabase
+         .table('watch_later')
+         .delete()
+         .eq('clerk_id', clerk_id)
+         .eq('media_id', media_id)
+         .execute())
+
 
 if __name__ == '__main__':
     dao = MediaDAO()
