@@ -172,36 +172,3 @@ def get_media_by_query(search: SearchQuery):
     except Exception as e:
         print(f"Error fetching search: {str(e)}")
         raise HTTPException(status_code=500, detail="Error fetching query.")
-
-@router.post('/watch-later', response_model=WatchLaterBatchResponse, status_code=status.HTTP_201_CREATED)
-def post_watch_later(batch: WatchLaterBatchRequest):
-    try:
-        new_watch_later = WatchLaterBatchResponse(clerk_id=batch.clerk_id, medias_id=batch.medias_id)
-        dao.insert_watch_later_by_batch(batch.clerk_id, batch.medias_id)
-        return new_watch_later
-    except Exception as e:
-        print(f"Error posting watch later {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error posting watch later: {str(e)}")
-
-@router.get('/watch-later', response_model=MediaResponse)
-def get_watch_later(request: WatchLaterRequest):
-    try:
-        bd_response = dao.get_watch_later_by_clerk_id(request.clerk_id, request.page_number, request.page_size)
-        medias_dict = dao.get_medias([media["media_id"] for media in bd_response])
-        medias_dtos = [MediaDTO(**media) for media in medias_dict]
-        return MediaResponse(media=medias_dtos)
-    except Exception as e:
-        print(f"Error fetching watch later: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error fetching watch later: {str(e)}")
-
-
-
-@router.delete('/watch-later', response_model=WatchLaterDeleteBatchRequest)
-def delete_watch_later(batch: WatchLaterDeleteBatchRequest):
-    try:
-        response = WatchLaterDeleteBatchRequest(clerk_id=batch.clerk_id, media_id=batch.media_id)
-        dao.delete_watch_later(batch.clerk_id, batch.media_id)
-        return response
-    except Exception as e:
-        print(f"Error delete watch later: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error delete watch later: {str(e)}")
