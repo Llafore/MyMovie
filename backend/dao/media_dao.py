@@ -3,7 +3,7 @@ import os
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, or_
 from supabase import create_client, Client
 from sqlmodel import Field, Relationship, SQLModel, create_engine, Session, select
 from sqlalchemy.orm import selectinload
@@ -27,15 +27,6 @@ class Genre(SQLModel, table=True):
 
     media: List["Media"] = Relationship(back_populates="genres", link_model=MediaGenreLink)
 
-class MediaCreditLink(SQLModel, table=True):
-    __tablename__ = "media_credits"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id")
-    people_id: int = Field(foreign_key="people.id")
-    character: Optional[str] = None
-    name: Optional[str] = None
-    role: Optional[str] = None
-
 
 class People(SQLModel, table=True):
     __tablename__ = "people"
@@ -43,7 +34,18 @@ class People(SQLModel, table=True):
     name: Optional[str] = None
     profile_path: Optional[str] = None
 
-    media: List["Media"] = Relationship(back_populates="people", link_model=MediaCreditLink)
+
+class MediaCreditLink(SQLModel, table=True):
+    __tablename__ = "media_credits"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    media_id: str = Field(foreign_key="media.id")
+    people_id: int = Field(foreign_key="people.id")
+    character: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = None
+
+    person: People = Relationship()
+    media: "Media" = Relationship(back_populates="credits")
 
 
 class Media(SQLModel, table=True):
@@ -57,7 +59,7 @@ class Media(SQLModel, table=True):
     is_movie: Optional[bool] = True
 
     genres: List[Genre] = Relationship(back_populates="media", link_model=MediaGenreLink)
-    people: List[People] = Relationship(back_populates="media", link_model=MediaCreditLink)
+    credits: List[MediaCreditLink] = Relationship(back_populates="media")
 
 class MediaDAO:
     def __init__(self):
@@ -81,7 +83,17 @@ class MediaDAO:
 
         for f in filters:
             col = None
-            # Campos relacionais
+
+            if f.field == "generic":
+                pattern = f"%{f.value}%"
+                or_block = [
+                    Media.title.ilike(pattern),
+                    People.name.ilike(pattern),
+                    MediaCreditLink.character.ilike(pattern)
+                ]
+                conditions.append(or_(*or_block))
+                continue
+
             if f.field == "genre.name":
                 col = Genre.name
             elif f.field == "people.name":
@@ -135,17 +147,18 @@ class MediaDAO:
 
     def load_by_query(self, query: SearchQuery):
         with Session(self.engine) as session:
-            statement = select(Media)
+            statement = select(Media).options(
+                selectinload(Media.genres),
+                selectinload(Media.credits).selectinload(MediaCreditLink.person)
+            )
 
             # 🔹 JOINs opcionais (dependendo dos filtros)
             if query.filters:
                 if any(f.field.startswith("genre.") for f in query.filters):
                     statement = statement.join(MediaGenreLink).join(Genre)
 
-                if any(f.field.startswith("people.") for f in query.filters):
-                    statement = statement.join(MediaCreditLink)
-                    if any(f.field == "people.name" for f in query.filters):
-                        statement = statement.join(People)
+                if any(f.field.startswith("people.") or f.field == "generic" for f in query.filters):
+                    statement = statement.join(MediaCreditLink).join(People)
 
                 # 🔹 WHERE
                 condition = self.build_where(query.filters)
@@ -243,7 +256,7 @@ class MediaDAO:
             {"clerk_id": clerk_id, "media_id": r.media_id, "score": r.score}
             for r in ratings
         ]
-        self.supabase.table("rating").insert(data).execute()
+        self.supabase.table("rating").upsert(data, on_conflict="clerk_id, media_id").execute()
 
     def get_medias(self, medias_ids: list[str]):
         return (self.supabase

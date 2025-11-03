@@ -48,7 +48,7 @@ class RecommendationRequest(BaseModel):
     from_startup: bool = Field(default=False)
 
 class FilterCondition(BaseModel):
-    field: Literal["title", "release_date", "is_movie", "genre.name", "people.name", "people.character"]
+    field: Literal["generic", "title", "release_date", "is_movie", "genre.name", "people.name", "people.character"]
     operator: Literal["eq", "gt", "gte", "lt", "lte", "neq", "like", "in"]
     value: Any
 
