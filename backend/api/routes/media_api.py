@@ -5,7 +5,8 @@ from fastapi import APIRouter, Query, status, HTTPException
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
 from models.media import CastDTO, MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
-    RecommendationRequest, SearchQuery
+    RecommendationRequest, SearchQuery, WatchLaterBatchResponse, WatchLaterBatchRequest, WatchLaterRequest, \
+    WatchLaterDeleteBatchRequest
 
 import tracemalloc
 
