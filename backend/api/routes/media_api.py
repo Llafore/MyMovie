@@ -1,10 +1,11 @@
 from datetime import datetime
+from time import perf_counter
 from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
-    RecommendationRequest, SearchQuery, CastDTO
+from models.media import CastDTO, MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
+    RecommendationRequest, SearchQuery
 
 import tracemalloc
 
@@ -76,57 +77,84 @@ def get_startup_medias():
 def get_recommendations(request: RecommendationRequest):
     try:
         clerk_id = request.clerk_id
-        page_number = request.page_number
-        page_size = request.page_size
+        cursor = request.cursor
+        limit = request.limit
 
-        if request.refresh or clerk_id not in recommendation_cache:
-            user_ratings = dao.get_ratings_by_clerk_id(clerk_id)
-            if not user_ratings:
-                raise HTTPException(status_code=404, detail="User reviews not found")
+        ts = perf_counter()
+        user_ratings = dao.get_ratings_by_clerk_id(clerk_id)
+        if not user_ratings:
+            raise HTTPException(status_code=404, detail="User reviews not found")
 
-            user_ratings_dict = {
-                rating['media_id']: rating['score']
-                for rating in user_ratings
-            }
+        te = perf_counter()
+        print(f"Time to fetch user ratings: {te - ts:0.4f} seconds")
 
-            full_recommendation_series = recommendation_engine.recommend_media(
-                user_history_scores=user_ratings_dict,
-            )
+        ts = perf_counter()
+        user_ratings_dict = {
+            rating['media_id']: rating['score']
+            for rating in user_ratings
+        }
+        te = perf_counter()
+        print(f"Time to build user ratings dict: {te - ts:0.4} seconds")
 
-            full_recommendation_ids = full_recommendation_series.index.tolist()
-            
-            recommendation_scores = full_recommendation_series.to_dict()
 
-            recommendation_cache[clerk_id] = {
-                "recommendation_ids": full_recommendation_ids,
-                "recommendation_scores": recommendation_scores,
-                "timestamp": datetime.utcnow(),
-            }
+        ts = perf_counter()
+        full_recommendation_series = recommendation_engine.recommend_media(
+            user_history_scores=user_ratings_dict,
+        )
+        te = perf_counter()
+        print(f"Time to generate recommendations: {te - ts:0.4f} seconds")
 
-            
-        cached_recommendation_ids = recommendation_cache[clerk_id]["recommendation_ids"]
+        ts = perf_counter()
+        full_recommendation_ids = full_recommendation_series.index.tolist()
+        recommendation_scores = full_recommendation_series.to_dict()
+        te = perf_counter()
+        print(f"Time to process recommendation results: {te - ts:0.4f} seconds")
+
+        prev_seen = set()
+        if not request.refresh and clerk_id in recommendation_cache:
+            prev_seen = recommendation_cache[clerk_id].get("already_seen", set())
+
+        already_seen = set() if request.refresh else prev_seen        
+
+        recommendation_cache[clerk_id] = {
+            "recommendation_ids": full_recommendation_ids,
+            "recommendation_scores": recommendation_scores,
+            "already_seen": already_seen,
+            "timestamp": datetime.utcnow(),
+        }
+
+        cache = recommendation_cache[clerk_id]
+        full_ids = cache["recommendation_ids"]
+        already_seen = cache["already_seen"]  
+
+
         if (request.from_startup):
-            filtered_ids = [mid for mid in cached_recommendation_ids if mid not in medias_startup_mock]
-            total_results = len(filtered_ids)
-            start_idx = (page_number - 1) * page_size
-            end_idx = start_idx + page_size
-            paged_ids = filtered_ids[start_idx:end_idx]
-
+            filtered_ids = [mid for mid in full_ids if mid not in medias_startup_mock]
         else:
-            total_results = len(cached_recommendation_ids)
-            start_idx = (page_number - 1) * page_size
-            end_idx = start_idx + page_size
-            paged_ids = cached_recommendation_ids[start_idx:end_idx]
+            filtered_ids = full_ids
+
+        remaining = [mid for mid in filtered_ids if mid not in already_seen] 
+        paged_ids = remaining[cursor : cursor + limit]
+        # paged_ids = remaining[:page_size]
+
+        cache["already_seen"].update(paged_ids)
+
+        next_cursor = cursor + len(paged_ids)
+        has_more = next_cursor < len(remaining)
 
         recommended_medias = dao.get_medias(paged_ids)
 
+        ts = perf_counter()
         genres = dao.get_genres_from_medias(paged_ids)
         for media in recommended_medias:
             media['genres'] = [ 
                 genre['genre']['name'] for genre in genres
                 if genre['media_id'] == media['id']
             ]
+        te = perf_counter()
+        print(f"Time to fetch genres for recommended medias: {te - ts:0.4f} seconds")
 
+        ts = perf_counter()
         credits = dao.get_credits_from_medias(paged_ids)
         for media in recommended_medias:
             media['cast'] = [ 
@@ -138,23 +166,27 @@ def get_recommendations(request: RecommendationRequest):
             )
             for credit in credits if credit['media_id'] == media['id']
         ]
+        te = perf_counter()
+        print(f"Time to fetch credits for recommended medias: {te - ts:0.4f} seconds")
 
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
         
         media_by_id = {media["id"]: media for media in recommended_medias}
         
+        ts = perf_counter()
         media_dtos = []
         for media_id in paged_ids:
             if media_id in media_by_id:
                 media_dict = dict(media_by_id[media_id])
                 media_dict["similarity_score"] = float(recommendation_series.get(media_id, 0))
                 media_dtos.append(MediaDTO(**media_dict))
+        te = perf_counter()
+        print(f"Time to build MediaDTOs: {te - ts:0.4f} seconds")
 
         return MediaResponse(
             media=media_dtos,
-            page_number=page_number,
-            page_size=page_size,
-            total_results=total_results
+            cursor=next_cursor,
+            has_more=has_more,
         )
 
     except Exception as e:
