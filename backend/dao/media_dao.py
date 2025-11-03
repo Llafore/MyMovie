@@ -293,7 +293,7 @@ class MediaDAO:
     def get_genres_from_medias(self, medias_ids: list[str]):
         return (self.supabase
                 .table('media_genres')
-                .select('*, genre(*)')
+                .select('media_id, genre(name)')
                 .in_('media_id', medias_ids)
                 .execute()
                 .data)

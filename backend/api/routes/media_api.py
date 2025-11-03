@@ -38,6 +38,8 @@ def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=1
         media_db_response = dao.load_media_paginated(from_index, to_index)
         media_dtos = [MediaDTO(**media) for media in media_db_response]
 
+        media_dtos = MediaUtil.get_data_from_medias(media_dtos, dao)
+
         filtered_media = [m for m in media_dtos if m.id not in medias_startup_mock] 
         return MediaResponse(media=filtered_media)
 
@@ -68,6 +70,9 @@ def get_startup_medias():
     try:
         medias_dict = dao.get_medias(medias_startup_mock)
         medias_dtos = [MediaDTO(**media) for media in medias_dict]
+
+        medias_dtos = MediaUtil.get_data_from_medias(medias_dtos, dao)
+
         return MediaResponse(media=medias_dtos)
     except Exception as e:
         print(f"Error fetching startup medias: {str(e)}")
@@ -80,19 +85,35 @@ def get_recommendations(request: RecommendationRequest):
         page_number = request.page_number
         page_size = request.page_size
 
-        if request.refresh or clerk_id not in recommendation_cache:
-            user_ratings = dao.get_ratings_by_clerk_id(clerk_id)
-            if not user_ratings:
-                raise HTTPException(status_code=404, detail="User reviews not found")
 
-            user_ratings_dict = {
-                rating['media_id']: rating['score']
-                for rating in user_ratings
-            }
+        user_ratings = dao.get_ratings_by_clerk_id(clerk_id)
+        if not user_ratings:
+            raise HTTPException(status_code=404, detail="User reviews not found")
 
-            full_recommendation_series = recommendation_engine.recommend_media(
-                user_history_scores=user_ratings_dict,
-            )
+        user_ratings_dict = {
+            rating['media_id']: rating['score']
+            for rating in user_ratings
+        }
+
+        full_recommendation_series = recommendation_engine.recommend_media(
+            user_history_scores=user_ratings_dict,
+        )
+
+        full_recommendation_ids = full_recommendation_series.index.tolist()
+        recommendation_scores = full_recommendation_series.to_dict()
+
+        prev_seen = set()
+        if not request.refresh and clerk_id in recommendation_cache:
+            prev_seen = recommendation_cache[clerk_id].get("already_seen", set())
+
+        already_seen = set() if request.refresh else prev_seen        
+
+        recommendation_cache[clerk_id] = {
+            "recommendation_ids": full_recommendation_ids,
+            "recommendation_scores": recommendation_scores,
+            "already_seen": already_seen,
+            "timestamp": datetime.utcnow(),
+        }
 
             full_recommendation_ids = full_recommendation_series.index.tolist()
             
@@ -121,24 +142,7 @@ def get_recommendations(request: RecommendationRequest):
 
         recommended_medias = dao.get_medias(paged_ids)
 
-        genres = dao.get_genres_from_medias(paged_ids)
-        for media in recommended_medias:
-            media['genres'] = [ 
-                genre['genre']['name'] for genre in genres
-                if genre['media_id'] == media['id']
-            ]
-
-        credits = dao.get_credits_from_medias(paged_ids)
-        for media in recommended_medias:
-            media['cast'] = [ 
-            CastDTO(
-                role=credit['role'],
-                name=credit['name'],
-                character_name=credit['character'],
-                profile_path=credit['people']['profile_path']
-            )
-            for credit in credits if credit['media_id'] == media['id']
-        ]
+        recommended_medias = MediaUtil.get_data_from_medias_for_recommendation(paged_ids, recommended_medias, dao)
 
         recommendation_series = recommendation_cache[clerk_id].get("recommendation_scores", {})
         
