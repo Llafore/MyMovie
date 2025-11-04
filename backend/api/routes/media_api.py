@@ -181,18 +181,19 @@ def post_watch_later(batch: WatchLaterBatchRequest):
         raise HTTPException(status_code=500, detail=f"Error insert watch later {str(e)}")
 
 @router.get('/watch-later', response_model=MediaResponse)
-def post_watch_later(batch: WatchLaterRequest):
+def get_watch_later(batch: WatchLaterRequest):
     try:
         medias_ids = dao.get_watch_later_by_clerk_id(batch.clerk_id, batch.page_number, batch.page_size)
         medias_dict = dao.get_medias([media["media_id"] for media in medias_ids])
         medias_dtos = [MediaDTO(**media) for media in medias_dict]
+        medias_dtos = MediaUtil.get_data_from_medias(medias_dtos, dao)
         return MediaResponse(media=medias_dtos)
     except Exception as e:
         print(f"Error fetch watch later {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetch watch later {str(e)}")
 
 @router.delete('/watch-later', response_model=WatchLaterDeleteBatchRequest)
-def post_watch_later(batch: WatchLaterDeleteBatchRequest):
+def delete_watch_later(batch: WatchLaterDeleteBatchRequest):
     try:
         response = WatchLaterDeleteBatchRequest(clerk_id=batch.clerk_id, media_id=batch.media_id)
         dao.delete_watch_later(batch.clerk_id, batch.media_id)
