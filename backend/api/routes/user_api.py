@@ -34,9 +34,17 @@ def check_user(request_body: UserExistsRequest):
 
 @router.post('/new_user', response_model=UserResponse)
 def create_user(user: UserCreate):
+
+    res = clerk.users.update(
+        user_id=user.clerk_id,
+        public_metadata={ "username": user.name }
+    )
+    assert res is not None
+
     new_user = User(clerk_id=user.clerk_id,
                     name=user.name,
                     email=user.email)
+
     dao.create_user(new_user)
     return new_user
 
