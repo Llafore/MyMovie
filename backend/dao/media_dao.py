@@ -274,6 +274,14 @@ class MediaDAO:
                 .execute()
                 .data)
 
+    def delete_rating(self, clerk_id, media_id):
+        (self.supabase
+         .table('rating')
+         .delete()
+         .eq('clerk_id', clerk_id)
+         .eq('media_id', media_id)
+         .execute())
+
     def get_credits_from_medias(self, medias_ids: list[str]):
         return (self.supabase
                 .table('media_credits')

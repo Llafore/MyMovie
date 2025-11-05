@@ -6,7 +6,7 @@ from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
 from models.media import CastDTO, MediaDTO, MediaResponse, RatingBatchResponse, RatingBatchRequest, \
     RecommendationRequest, SearchQuery, WatchLaterBatchResponse, WatchLaterBatchRequest, WatchLaterRequest, \
-    WatchLaterDeleteBatchRequest
+    WatchLaterDeleteBatchRequest, DeleteRatingRequest, Rating
 
 import tracemalloc
 
@@ -57,6 +57,18 @@ def post_rating(batch: RatingBatchRequest):
     except Exception as e:
         print(f"Error posting rating: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error inserting reviews: {str(e)}")
+
+@router.delete('/rating', response_model=RatingBatchResponse)
+def delete_rating(batch: DeleteRatingRequest):
+    try:
+        rating_deleted = RatingBatchResponse(
+            clerk_id=batch.clerk_id,
+            ratings=[Rating(media_id=batch.media_id, score=0)])
+        dao.delete_rating(batch.clerk_id, batch.media_id)
+        return rating_deleted
+    except Exception as e:
+        print(f"Error delete rating: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error delete reviews: {str(e)}")
 
 
 @router.get('/check_ratings')

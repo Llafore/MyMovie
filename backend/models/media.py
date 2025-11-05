@@ -38,6 +38,10 @@ class RatingBatchResponse(BaseModel):
     clerk_id: str
     ratings: list[Rating]
 
+class DeleteRatingRequest(BaseModel):
+    clerk_id: str
+    media_id: str
+
 class RecommendationRequest(BaseModel):
     clerk_id: str
     cursor: int = Field(default=0, ge=0)
