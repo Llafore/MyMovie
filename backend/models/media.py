@@ -26,6 +26,9 @@ class MediaResponse(BaseModel):
     cursor: Optional[int] = None
     has_more: Optional[bool] = None
 
+class SearchMediaResponse(BaseModel):
+    media: list[MediaDTO]
+
 class Rating(BaseModel):
     media_id: str
     score: float
