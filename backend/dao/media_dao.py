@@ -7,6 +7,8 @@ from sqlalchemy.sql.expression import and_, or_
 from supabase import create_client, Client
 from sqlmodel import Field, Relationship, SQLModel, create_engine, Session, select
 from sqlalchemy.orm import selectinload
+from dao.db import engine
+from urllib.parse import quote
 
 import time
 
@@ -64,15 +66,7 @@ class Media(SQLModel, table=True):
 class MediaDAO:
     def __init__(self):
 
-        USER = os.getenv("user")
-        PASSWORD = os.getenv("password")
-        HOST = os.getenv("host")
-        PORT = os.getenv("port")
-        DBNAME = os.getenv("dbname")
-
-        DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
-
-        self.engine = create_engine(DATABASE_URL, echo=False)
+        self.engine = engine
         
         url : str = os.getenv("SUPABASE_URL")
         key : str = os.getenv("SUPABASE_KEY")
@@ -184,6 +178,40 @@ class MediaDAO:
             statement = statement.distinct()
             results = session.exec(statement).all()
             return results
+
+    def load_by_query_sdk(self, query: SearchQuery):
+        params = {
+            "search_term": None,
+            "genre_filters": None,
+            "is_movie_filter": None
+        }
+        
+        genre_values = []
+        
+        for f in query.filters or []:
+            if f.field == "generic":
+                params["search_term"] = f.value
+            elif f.field == "genre.name":
+                genre_values.append(f.value)
+            elif f.field == "is_movie":
+                params["is_movie_filter"] = f.value.lower() == "true"
+        
+        if genre_values:
+            params["genre_filters"] = genre_values
+        
+        sb = self.supabase.rpc("search_four", params)
+        
+        # Apply sorting and pagination
+        if query.sort_by:
+            sb = sb.order(query.sort_by, desc=query.sort_order == "desc")
+        
+        if query.limit:
+            start = query.offset or 0
+            end = start + query.limit - 1
+            sb = sb.range(start, end)
+        
+        response = sb.execute()
+        return response.data
 
     def load_all_media(self) -> list[dict]:
         return self.supabase.table('media').select('*').execute().data
