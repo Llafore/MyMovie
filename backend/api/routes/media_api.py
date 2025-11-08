@@ -175,7 +175,7 @@ def get_recommendations(request: RecommendationRequest):
 def get_media_by_query(search: SearchQuery):
     try:
         medias_list = dao.load_by_query_sdk(search)
-        return MediaResponse(media=medias_list)
+        return SearchMediaResponse(media=medias_list)
 
     except Exception as e:
         print(f"Error fetching search: {str(e)}")

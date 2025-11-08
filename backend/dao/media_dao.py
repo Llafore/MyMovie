@@ -183,7 +183,8 @@ class MediaDAO:
         params = {
             "search_term": None,
             "genre_filters": None,
-            "is_movie_filter": None
+            "is_movie_filter": None,
+            "clerk_id_param": query.clerk_id
         }
         
         genre_values = []
@@ -199,7 +200,7 @@ class MediaDAO:
         if genre_values:
             params["genre_filters"] = genre_values
         
-        sb = self.supabase.rpc("search_four", params)
+        sb = self.supabase.rpc("search_five", params)
         
         # Apply sorting and pagination
         if query.sort_by:

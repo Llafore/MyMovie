@@ -21,13 +21,16 @@ class MediaDTO(BaseModel):
     genres: Optional[list[str]] = None
     cast: Optional[list[CastDTO]] = None
 
+class MediaSearchDTO(MediaDTO):
+    user_rating: Optional[float] = None
+
 class MediaResponse(BaseModel):
     media: list[MediaDTO]
     cursor: Optional[int] = None
     has_more: Optional[bool] = None
 
 class SearchMediaResponse(BaseModel):
-    media: list[MediaDTO]
+    media: list[MediaSearchDTO]
 
 class Rating(BaseModel):
     media_id: str
@@ -56,13 +59,13 @@ class RecommendationRequest(BaseModel):
 
 class FilterCondition(BaseModel):
     field: Literal["generic", "title", "release_date", "is_movie", "genre.name", "people.name", "people.character"]
-    operator: Literal["eq", "gt", "gte", "lt", "lte", "neq", "like", "in"]
     value: Any
 
 class SearchQuery(BaseModel):
     filters: Optional[list[FilterCondition]] = None
     sort_by: Optional[str] = None
     sort_order: Optional[Literal["asc", "desc"]] = "asc"
+    clerk_id: Optional[str] = None
     limit: Optional[int] = 20
     offset: Optional[int] = 0
 
