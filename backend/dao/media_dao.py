@@ -217,12 +217,13 @@ class MediaDAO:
     def load_all_media(self) -> list[dict]:
         return self.supabase.table('media').select('*').execute().data
 
-    def load_media_paginated(self, from_index, to_index) -> list[dict]:
+    def load_media_paginated(self, clerk_id, from_index, to_index) -> list[dict]:
         return (
             self.supabase
             .table('media')
-            .select('*')
+            .select('*, media_credits(*), media_genres(*), watch_later(*)')
             .range(from_index, to_index)
+            .filter('watch_later.clerk_id', 'eq', clerk_id)
             .execute()
             .data
         )   
@@ -287,13 +288,28 @@ class MediaDAO:
         ]
         self.supabase.table("rating").upsert(data, on_conflict="clerk_id, media_id").execute()
 
-    def get_medias(self, medias_ids: list[str]):
-        return (self.supabase
-                .table('media')
-                .select('*, media_credits(*), media_genres(*)')
-                .in_('id', medias_ids)
-                .execute()
-                .data)
+    def get_medias(self, medias_ids: list[str], clerk_id: str, with_ratings: bool = False, with_bookmarks: bool = False):
+        select_query = '*, media_credits(*), media_genres(*)'
+        
+        if with_ratings:
+            select_query += ', rating(*)'
+        if with_bookmarks:
+            select_query += ', watch_later(*)'
+
+        query = (
+            self.supabase
+            .table('media')
+            .select(select_query)
+            .in_('id', medias_ids)
+        )
+
+        if with_ratings:
+            query = query.filter('rating.clerk_id', 'eq', clerk_id)
+
+        if with_bookmarks:
+            query = query.filter('watch_later.clerk_id', 'eq', clerk_id)
+
+        return query.execute().data
 
     def get_ratings_by_clerk_id(self, clerk_id):
         return (self.supabase

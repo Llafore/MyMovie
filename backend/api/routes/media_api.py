@@ -4,7 +4,7 @@ from typing import Dict
 from fastapi import APIRouter, Query, status, HTTPException
 from recommendation_engine.engine import Engine
 from dao.media_dao import MediaDAO
-from models.media import  MediaDTO, MediaResponse, SearchMediaResponse, RatingBatchResponse, RatingBatchRequest, \
+from models.media import  MediaDTO, MediaResponse, MediaSearchDTO, SearchMediaResponse, RatingBatchResponse, RatingBatchRequest, \
     RecommendationRequest, SearchQuery, WatchLaterBatchResponse, WatchLaterBatchRequest, WatchLaterRequest, \
     WatchLaterDeleteBatchRequest, DeleteRatingRequest, Rating
 
@@ -31,13 +31,19 @@ recommendation_cache: Dict[str, Dict] = {}
 medias_startup_mock = ["f238", "s456", "f497", "s1396", "s1416", "s1429", "s2190", "s2316", "s14424", "s93405"]
 
 @router.get('/media', response_model=MediaResponse)
-def get_movies(page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=100)):
+def get_movies(clerk_id: str, page: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=100)):
     from_index = page * page_size
     to_index = (page + 1) * page_size - 1
     
     try:
-        media_db_response = dao.load_media_paginated(from_index, to_index)
-        media_dtos = [MediaDTO(**media) for media in media_db_response]
+        media_db_response = dao.load_media_paginated(clerk_id, from_index, to_index)
+        media_dtos = [
+            MediaDTO(
+                **media,
+                bookmarked=True if media['watch_later'] else False
+                )
+            for media in media_db_response
+        ]
 
         media_dtos = MediaUtil.get_data_from_medias(media_dtos, dao)
 
@@ -79,10 +85,16 @@ def get_check_ratings(user: str):
     return {"status": "ok"} 
 
 @router.get('/startup_medias', response_model=MediaResponse)
-def get_startup_medias():
+def get_startup_medias(clerk_id: str):
     try:
-        medias_dict = dao.get_medias(medias_startup_mock)
-        medias_dtos = [MediaDTO(**media) for media in medias_dict]
+        medias_dict = dao.get_medias(medias_startup_mock, clerk_id, False, True)
+        medias_dtos = [
+            MediaDTO(
+                **media,
+                bookmarked=True if media['watch_later'] else False
+                ) 
+            for media in medias_dict
+        ]
 
         medias_dtos = MediaUtil.get_data_from_medias(medias_dtos, dao)
 
@@ -146,7 +158,7 @@ def get_recommendations(request: RecommendationRequest):
         next_cursor = cursor + len(paged_ids)
         has_more = next_cursor < len(remaining)
 
-        recommended_medias = dao.get_medias(paged_ids)
+        recommended_medias = dao.get_medias(paged_ids, clerk_id, False, True)
 
         recommended_medias = MediaUtil.get_data_from_medias_for_recommendation(paged_ids, recommended_medias, dao)
 
@@ -159,7 +171,10 @@ def get_recommendations(request: RecommendationRequest):
             if media_id in media_by_id:
                 media_dict = dict(media_by_id[media_id])
                 media_dict["similarity_score"] = float(recommendation_series.get(media_id, 0))
-                media_dtos.append(MediaDTO(**media_dict))
+                media_dtos.append(MediaDTO(
+                    **media_dict,
+                    bookmarked=True if media_dict['watch_later'] else False
+                ))
 
         return MediaResponse(
             media=media_dtos,
@@ -191,14 +206,22 @@ def post_watch_later(batch: WatchLaterBatchRequest):
         print(f"Error insert watch later {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error insert watch later {str(e)}")
 
-@router.get('/watch-later', response_model=MediaResponse)
-def get_watch_later(batch: WatchLaterRequest):
+@router.get('/watch-later', response_model=SearchMediaResponse)
+def get_watch_later(clerk_id: str, page_number: int = Query(0, ge=0), page_size: int = Query(10, ge=1, le=100)):
     try:
-        medias_ids = dao.get_watch_later_by_clerk_id(batch.clerk_id, batch.page_number, batch.page_size)
-        medias_dict = dao.get_medias([media["media_id"] for media in medias_ids])
-        medias_dtos = [MediaDTO(**media) for media in medias_dict]
+        medias_ids = dao.get_watch_later_by_clerk_id(clerk_id, page_number, page_size)
+        medias_dict = dao.get_medias([media["media_id"] for media in medias_ids], clerk_id, True, False)
+
+        medias_dtos = [
+            MediaSearchDTO(
+                    **media, 
+                    bookmarked=True, 
+                    user_rating=media['rating'][0].get('score') if media['rating'] else None
+                ) 
+            for media in medias_dict
+        ]
         medias_dtos = MediaUtil.get_data_from_medias(medias_dtos, dao)
-        return MediaResponse(media=medias_dtos)
+        return SearchMediaResponse(media=medias_dtos)
     except Exception as e:
         print(f"Error fetch watch later {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetch watch later {str(e)}")

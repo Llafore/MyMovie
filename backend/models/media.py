@@ -20,6 +20,7 @@ class MediaDTO(BaseModel):
     similarity_score: Optional[float] = None
     genres: Optional[list[str]] = None
     cast: Optional[list[CastDTO]] = None
+    bookmarked: Optional[bool] = False
 
 class MediaSearchDTO(MediaDTO):
     user_rating: Optional[float] = None
