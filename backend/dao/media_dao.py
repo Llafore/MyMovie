@@ -5,10 +5,8 @@ from typing import List, Optional
 from dotenv import load_dotenv
 from sqlalchemy.sql.expression import and_, or_
 from supabase import create_client, Client
-from sqlmodel import Field, Relationship, SQLModel, create_engine, Session, select
+from sqlmodel import Field, Relationship, SQLModel, Session, select
 from sqlalchemy.orm import selectinload
-from dao.db import engine
-from urllib.parse import quote
 
 import time
 
@@ -66,7 +64,7 @@ class Media(SQLModel, table=True):
 class MediaDAO:
     def __init__(self):
 
-        self.engine = engine
+        # self.engine = engine
         
         url : str = os.getenv("SUPABASE_URL")
         key : str = os.getenv("SUPABASE_KEY")

@@ -5,97 +5,99 @@ from time import perf_counter
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 
-from fetch_tmdb import (fetch_popular_movies, fetch_top_rated_movies, fetch_genres, fetch_top_rated_series, fetch_popular_series,
-                        fetch_series_by_genres, fetch_movies_by_genres, fetch_movie_credits, fetch_tv_credits)
-from normalize_data import normalize_media_data, normalize_genres, normalize_credits
+from fetch_tmdb import (fetch_movie_details, fetch_movies_by_genres, fetch_popular_movies, fetch_serie_details, fetch_series_by_genres, 
+                        fetch_top_rated_movies, fetch_genres, fetch_top_rated_series, 
+                        fetch_popular_series, fetch_movie_credits, fetch_tv_credits)
+from normalize_data import (normalize_media_data, normalize_genres, normalize_credits, 
+                            normalize_movie_details, normalize_series_details)
 from backend.dao.media_dao import MediaDAO
 from backend.dao.genre_dao import GenreDAO
 from backend.dao.people_dao import PeopleDAO
 
-def clear_data():
-    media_dao = MediaDAO()
-    genre_dao = GenreDAO()
-    people_dao = PeopleDAO()
 
-    media_dao.clear_media_genres()
-    people_dao.clear_people()
-    people_dao.clear_credits()
-    genre_dao.clear_genres()
-    media_dao.clear_media()
-
-def search_genres():
-    print("Fetching genres...")
-    dao = GenreDAO()
-    genres = fetch_genres()
-    normalized_genre = normalize_genres(genres)
-    dao.insert_genres(normalized_genre)
-
-    print(f"Fetched {len(genres)} genres")
-    return genres
-
-def search_movies(genres: list[dict[int | str]] = None):
-    print("Fetching movies...")
-    dao = MediaDAO()
-    movies = (fetch_top_rated_movies(pages=10) + fetch_popular_movies(pages=10) + fetch_movies_by_genres(genres, pages_by_genre=2))
-
-    normalized_movies, normalized_movies_genres = normalize_media_data(movies, is_movie=True)
-
-    dao.insert_media(normalized_movies)
-    dao.insert_media_genres(normalized_movies_genres)
-
-    print(f"Fetched {len(normalized_movies)} TMDb movies")
-
-def search_series(genres: list[dict[int | str]] = None):
-    print("Fetching series...")
-    dao = MediaDAO()
-    series = (fetch_top_rated_series(pages=10) + fetch_popular_series(pages=10) + fetch_series_by_genres(genres, pages_by_genre=2))
-
-    normalized_series, normalized_series_genres = normalize_media_data(series, is_movie=False)
-
-    dao.insert_media(normalized_series)
-    dao.insert_media_genres(normalized_series_genres)
-
-    print(f"Fetched {len(normalized_series)} TMDb series")
-
-def search_credits():
-    print("Fetching credits...")
-
-    media_dao = MediaDAO()
-    people_dao = PeopleDAO()
-
-    movies_ids = media_dao.load_movies_ids()
-    movie_credits = fetch_movie_credits(movies_ids)
-
-    series_ids = media_dao.load_series_ids()
-    tv_credits = fetch_tv_credits(series_ids)
-
-    ts = perf_counter()
-    peoples, credits = normalize_credits(movie_credits, tv_credits)
-    te = perf_counter()
-    print("time normalizing credits:", te-ts)
-
-    people_dao.insert_people(peoples)
-    people_dao.insert_credits(credits)
-
-    return peoples, credits
+class DataPipeline:
+    
+    def __init__(self):
+        self.media_dao = MediaDAO()
+        self.genre_dao = GenreDAO()
+        self.people_dao = PeopleDAO()
+        
+        self.genres = []
+        self.movies = []
+        self.movies_ids = set()
+        self.movie_genres = []
+        self.series = []
+        self.series_ids = set()
+        self.series_genres = []
+    
+    def clear_data(self):
+        print("Clearing data...")
+        self.media_dao.clear_media_genres()
+        self.people_dao.clear_people()
+        self.people_dao.clear_credits()
+        self.genre_dao.clear_genres()
+        self.media_dao.clear_media()
+    
+    def fetch_genres(self):
+        print("Fetching genres...")
+        self.genres = fetch_genres()
+        normalized_genre = normalize_genres(self.genres)
+        self.genre_dao.insert_genres(normalized_genre)
+        print(f"Fetched {len(self.genres)} genres")
+    
+    def fetch_movies(self):
+        print("Fetching movies...")
+        movies = (fetch_top_rated_movies(pages=15) + fetch_popular_movies(pages=8) + fetch_movies_by_genres(self.genres, pages_by_genre=2))
+        self.movies, self.movie_genres, self.movies_ids = normalize_media_data(movies, is_movie=True)
+        print(f"Fetched {len(self.movies)} TMDb movies")
+    
+    def fetch_series(self):
+        print("Fetching series...")
+        series = (fetch_top_rated_series(pages=15) + fetch_popular_series(pages=8) + fetch_series_by_genres(self.genres, pages_by_genre=2))
+        self.series, self.series_genres, self.series_ids = normalize_media_data(series, is_movie=False)
+        print(f"Fetched {len(self.series)} TMDb series")
+    
+    def fetch_and_store_credits(self):
+        print("Fetching credits...")
+        
+        movie_credits = fetch_movie_credits(self.movies_ids)
+        movie_details = fetch_movie_details(self.movies_ids)
+        tv_credits = fetch_tv_credits(self.series_ids)
+        series_details = fetch_serie_details(self.series_ids)
+        
+        movies_normalized = normalize_movie_details(self.movies, movie_details)
+        self.media_dao.insert_media(movies_normalized)
+        self.media_dao.insert_media_genres(self.movie_genres)
+        
+        series_normalized = normalize_series_details(self.series, series_details)
+        self.media_dao.insert_media(series_normalized)
+        self.media_dao.insert_media_genres(self.series_genres)
+        
+        ts = perf_counter()
+        peoples, credits = normalize_credits(movie_credits, tv_credits, series_details)
+        te = perf_counter()
+        print(f"Time normalizing credits: {te-ts:.2f}s")
+        
+        self.people_dao.insert_people(peoples)
+        self.people_dao.insert_credits(credits)
+    
+    def run(self):
+        print("Accessing the TMDB API...")
+        self.clear_data()
+        self.fetch_genres()
+        self.fetch_movies()
+        self.fetch_series()
+        self.fetch_and_store_credits()
+        print("Data pipeline done...")
 
 
 def run_pipeline():
-    print("Clearing data...")
-    clear_data()
+    pipeline = DataPipeline()
+    pipeline.run()
 
-    print("Accessing the TMDB API...")
-    genres = search_genres()
-    search_movies(genres)
-    search_series(genres)
-    search_credits()
-    print("Data pipeline done...")
 
 if __name__ == "__main__":
     ts = perf_counter()
     run_pipeline()
     te = perf_counter()
-    print("Total time data pipeline:", te - ts)
-    # search_credits()
-    # peoples, credits = search_credits()
-    # print(peoples)
+    print(f"Total time data pipeline: {te - ts:.2f}s")
