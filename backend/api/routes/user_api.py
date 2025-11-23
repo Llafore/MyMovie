@@ -54,7 +54,8 @@ async def delete_user(deleteBody: UserDelete, token: str = Depends(get_bearer_to
         print(token)
         dao.delete_user(deleteBody.clerk_id)
 
-        res = clerk.users.delete(user_id=deleteBody.clerk_id)
+        res = clerk.users.delete(user_id=deleteBody.clerk_id, retries=3)
+        print(res)
         assert res is not None
 
         return UserDeleteResponse(detail="deleted succesfully.")

@@ -8,6 +8,7 @@ class CastDTO(BaseModel):
     name: Optional[str] = None
     character_name: Optional[str] = None
     profile_path: Optional[str] = None
+    popularity: Optional[float] = None
 
 class MediaDTO(BaseModel):
     id: str
@@ -21,6 +22,11 @@ class MediaDTO(BaseModel):
     genres: Optional[list[str]] = None
     cast: Optional[list[CastDTO]] = None
     bookmarked: Optional[bool] = False
+    popularity: Optional[float] = None
+    original_title: Optional[str] = None
+    number_of_seasons: Optional[int] = None
+    number_of_episodes: Optional[int] = None
+    runtime: Optional[int] = None
 
 class MediaSearchDTO(MediaDTO):
     user_rating: Optional[float] = None

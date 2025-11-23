@@ -120,9 +120,10 @@ def fetch_movie_credits(movies_ids: list[dict[str|int]]):
     ts = time.perf_counter()
     all_credits = []
     params = { "api_key": API_KEY }
+    print(movies_ids)
 
     for movie_id in movies_ids:
-        url = f"{BASE_URL}/movie/{movie_id['id'][1:]}/credits"
+        url = f"{BASE_URL}/movie/{movie_id[1:]}/credits"
         response = requests.get(url, params=params)
         all_credits.append(response.json())
 
@@ -130,13 +131,41 @@ def fetch_movie_credits(movies_ids: list[dict[str|int]]):
     print("time fetching credits:", te-ts)
     return all_credits
 
+def fetch_movie_details(movies_ids: list[dict[str|int]]):
+    ts = time.perf_counter()
+    all_details = []
+    params = { "api_key": API_KEY }
+
+    for movie_id in movies_ids:
+        url = f"{BASE_URL}/movie/{movie_id[1:]}?language={LANGUAGE}"
+        response = requests.get(url, params=params)
+        all_details.append(response.json())
+
+    te = time.perf_counter()
+    print("time fetching movies details:", te-ts)
+    return all_details
+
+def fetch_serie_details(series_ids: list[dict[str|int]]):
+    ts = time.perf_counter()
+    all_details = []
+    params = { "api_key": API_KEY }
+
+    for serie_id in series_ids:
+        url = f"{BASE_URL}/tv/{serie_id[1:]}?language={LANGUAGE}"
+        response = requests.get(url, params=params)
+        all_details.append(response.json())
+
+    te = time.perf_counter()
+    print("time fetching series details:", te-ts)
+    return all_details
+
 def fetch_tv_credits(series_ids: list[int]):
     ts = time.perf_counter()
     all_credits = []
     params = { "api_key": API_KEY }
 
     for serie_id in series_ids:
-        url = f"{BASE_URL}/tv/{serie_id['id'][1:]}/credits"
+        url = f"{BASE_URL}/tv/{serie_id[1:]}/credits"
         response = requests.get(url, params=params)
         all_credits.append(response.json())
 

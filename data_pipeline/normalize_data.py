@@ -7,7 +7,6 @@ def normalize_media_data(medias: list[dict], is_movie: bool):
         mid = f'f{media['id']}' if is_movie else f's{media['id']}'
         if mid in seen:
             continue
-        seen.add(mid)
 
         m = {
             "id": f'f{media["id"]}' if is_movie else f's{media["id"]}',
@@ -18,14 +17,42 @@ def normalize_media_data(medias: list[dict], is_movie: bool):
             "poster_path": media.get("poster_path"),
             "backdrop_path": media.get("backdrop_path"),
         }
+
         if m["release_date"] == '' or m["description"] == '':
             continue
+
+        seen.add(mid)
 
         normalized_media.append(m)
         media_genres = normalize_media_genres(media, is_movie)
         normalized_medias_genres.extend(media_genres)
 
-    return normalized_media, normalized_medias_genres
+    return normalized_media, normalized_medias_genres, seen
+
+def normalize_movie_details(movies_without_details, movie_details):
+    movies_with_details = []
+    for movie in movies_without_details:
+        detail = [m for m in movie_details if m['id'] == int(movie['id'][1:])]
+        detail = detail[0]
+        movie['original_title'] = detail['original_title']
+        movie['popularity'] = detail['popularity']
+        movie['runtime'] = detail['runtime']
+        movies_with_details.append(movie)
+
+    return movies_with_details
+
+def normalize_series_details(series_without_details, series_details):
+    series_with_details = []
+    for serie in series_without_details:
+        detail = [s for s in series_details if s['id'] == int(serie['id'][1:])]
+        detail = detail[0]
+        serie['popularity'] = detail['popularity']
+        serie['original_title'] = detail['original_name']
+        serie['number_of_seasons'] = detail['number_of_seasons']
+        serie['number_of_episodes'] = detail['number_of_episodes']
+        series_with_details.append(serie)
+
+    return series_with_details
 
 def normalize_genres(genres: list[dict[int | int]]) -> list[dict]:
     normalized_genres = []
@@ -49,7 +76,7 @@ def normalize_media_genres(media: dict, is_movie: bool) -> list[dict]:
 
     return normalized_media_genres
 
-def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
+def normalize_credits(movie_credits: list[dict], tv_credits: list[dict], series_details):
     people = []
     seen = set()
     normalized_credits = []
@@ -58,7 +85,7 @@ def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
         cast_with_character = [
             person for person in media.get("cast", [])
             if "character" in person and person["character"]
-        ][:15]
+        ][:12]
 
         for person in cast_with_character:
             normalized_credits.append({
@@ -66,7 +93,8 @@ def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
                 "people_id": person["id"],
                 "character": person["character"],
                 "role": "actor",
-                "name": person["name"]
+                "name": person["name"],
+                "popularity": person['popularity']
             })
             if person["id"] not in seen:
                 people.append({
@@ -78,15 +106,15 @@ def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
 
         crew_filtered = [
             person for person in media.get("crew", [])
-            if person.get("job") in ("Executive Producer", "Director")
+            if person.get("job") in ("Director") or person.get("department") in ("Writing")
         ]
 
         for person in crew_filtered:
             normalized_credits.append({
                 "media_id": f'f{media["id"]}',
                 "people_id": person["id"],
-                "character": None,
-                "role": person["job"],
+                "character": person["job"],
+                "role": "Directing",
                 "name": person["name"]
             })
             if person["id"] not in seen:
@@ -101,7 +129,7 @@ def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
         cast_with_character = [
             person for person in media.get("cast", [])
             if "character" in person and person["character"]
-        ][:15]
+        ][:10]
 
         for person in cast_with_character:
             normalized_credits.append({
@@ -109,7 +137,8 @@ def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
                 "people_id": person["id"],
                 "character": person["character"],
                 "role": "actor",
-                "name": person["name"]
+                "name": person["name"],
+                "popularity": person['popularity']
             })
             if person["id"] not in seen:
                 people.append({
@@ -119,17 +148,19 @@ def normalize_credits(movie_credits: list[dict], tv_credits: list[dict]):
                 })
                 seen.add(person["id"])
 
-        crew_filtered = [
-            person for person in media.get("crew", [])
-            if person.get("job") in ("Executive Producer", "Director")
-        ]
+        detail = [s for s in series_details if s['id'] == media['id']]
+        print(detail[0]['tagline'], detail[0]['created_by'])
+        print(series_details[0]['id'], series_details[0]['name'])
+        print(media['id'])
+        crew_filtered =  detail[0]['created_by'] 
+        print(crew_filtered)
 
         for person in crew_filtered:
             normalized_credits.append({
                 "media_id": f's{media["id"]}',
                 "people_id": person["id"],
-                "character": None,
-                "role": person["job"],
+                "character": "Criador(a)",
+                "role": "Creator",
                 "name": person["name"]
             })
             if person["id"] not in seen:
